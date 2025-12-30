@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { VerticalMenu } from '@/components/VerticalMenu'; 
 import { Heart, Search, User, Filter, Star, SortAsc, ArrowDown, Gamepad2 } from 'lucide-react';
 
+// Forzamos a Next.js a tratar la página como dinámica para evitar errores de Firebase en el build de Vercel
+export const dynamic = 'force-dynamic';
+
 // --- TIPOS LOCALES ---
 interface UserData {
   id?: number;
@@ -30,7 +33,7 @@ const PALETTE = {
   VIOLETA: '#a855f7',
   CYAN: '#2DD4E0',
   ROSA: '#f6339a',
-  MORADO: '#bd6ce9', // Color Morado Actualizado a #bd6ce9
+  MORADO: '#bd6ce9',
   ROJO: '#FF4444',
   BLANCO: '#FFFFFF',
   GRIS: '#9CA3AF'
@@ -308,7 +311,6 @@ export default function AllGamesPage() {
       className="min-h-screen flex flex-col bg-[#131119]"
       style={{ colorScheme: 'dark' }}
     >
-      {/* 1. ESTILO DE SCROLLBAR (Consistente) */}
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;
@@ -319,7 +321,6 @@ export default function AllGamesPage() {
         }
       `}</style>
       
-      {/* 2. HEADER (Idéntico a ProfilePage/MostPlayed) */}
       <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 md:px-10 border-b border-white/5 bg-[#131119]/80 backdrop-blur-xl shrink-0">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
@@ -370,28 +371,21 @@ export default function AllGamesPage() {
         </div>
       </header>
       
-      {/* 3. MAIN WRAPPER (Estructura Unificada) */}
       <main className="flex-1 px-6 md:px-10 max-w-[1920px] mx-auto w-full relative flex flex-col">
         
         <div className="flex flex-col md:flex-row gap-8 flex-1 items-stretch">
           
-          {/* Menú Lateral (Sticky) */}
           <aside className="hidden md:block w-[260px] shrink-0 relative">
              <div className="sticky top-[74px] pt-10 pb-10 h-[calc(100vh-74px)] overflow-y-auto no-scrollbar">
-                {/* Active Item: 'all-games' para All Games. 
-                    Eliminada la prop 'activeColor' para corregir error TS2322 */}
                 <VerticalMenu activeItem="all-games" /> 
              </div>
           </aside>
 
-          {/* Área Derecha: Contenido Específico de All Games */}
           <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10">
             
-            {/* Header de Filtros (Sticky dentro de la columna) */}
             <div className="sticky top-[73px] z-40 bg-[#131119] pt-2 pb-6 -mt-2 border-b border-white/5 md:border-none">
               <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 relative">
                 
-                {/* Título - CON GAMEPAD MORADO (#bd6ce9) */}
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2 font-display tracking-tight">
                     <Gamepad2 size={24} style={{ color: PALETTE.MORADO }} /> All Games
@@ -402,7 +396,6 @@ export default function AllGamesPage() {
                   <p className="text-gray-400 text-sm">Explora el catálogo completo de juegos disponibles.</p>
                 </div>
 
-                {/* Filtros */}
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mr-4 max-w-[calc(100vw-4rem)] xl:max-w-none">
                     {FILTERS.map((filter) => (
@@ -450,7 +443,6 @@ export default function AllGamesPage() {
               </div>
             </div>
 
-            {/* Grilla de Juegos */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-6">
               {sortedGames.map((game) => (
                 <Link 
