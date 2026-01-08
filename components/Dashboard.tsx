@@ -18,12 +18,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   const activeGame = hoveredGame || data.featuredGame;
 
   return (
-    // 1. AJUSTE DE GRID:
+    // 1. GRID PRINCIPAL: Ocupa el 100% del alto disponible
     // - Izquierda: 260px (Fijo)
     // - Derecha: 420px (Fijo, antes era 340px, lo subimos para que no sea tan angosto)
     // - Centro: 1fr (El resto del espacio)
     // - gap-8: Espacio idéntico (32px) entre cada columna
-    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] xl:grid-cols-[260px_1fr_420px] gap-8 h-[calc(100vh-9rem)]">
+    // AJUSTE PRECISO: Usamos '9.625rem' (aprox 154px) para igualar exactamente el padding top+bottom+header de 'All Games'.
+    // Esto asegura que la Card Pro esté en la misma posición vertical en ambas páginas.
+    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] xl:grid-cols-[260px_1fr_420px] gap-8 h-[calc(100vh-9.625rem)]">
       
       {/* 2. MENÚ IZQUIERDO */}
       <aside className="hidden lg:block h-full overflow-hidden">

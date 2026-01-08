@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { TrendingUp, Users, Star, Activity, Trophy, Clock } from 'lucide-react';
 import { 
     PieChart, Pie, Cell, ResponsiveContainer,
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip 
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip // Cambiado LineChart/Line por AreaChart/Area
 } from 'recharts';
 
 // ============================================================================
@@ -81,7 +81,6 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({ data }) =
 
     return (
         <div 
-            // CAMBIO: Se actualizó el fondo a bg-neutral-900/80 y el blur a backdrop-blur-md para coincidir con la tarjeta superior
             className="bg-neutral-900/80 p-5 rounded-2xl border border-white/5 shadow-2xl backdrop-blur-md h-64 flex flex-col w-full transition-colors duration-300"
             onMouseEnter={(e) => handleHover(e, true)}
             onMouseLeave={(e) => handleHover(e, false)}
@@ -93,13 +92,18 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({ data }) =
 
             <div className="flex-1 w-full min-h-[100px]">
                 <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                         <defs>
-                            {/* Degradado: Cyan (#2DD4E0) -> Lila Correcto (#b340bf) -> Morado (#4530BE) */}
+                            {/* Degradado Linea: Cyan -> Lila -> Morado */}
                             <linearGradient id="activityChartGradient" x1="0" y1="0" x2="1" y2="0">
                                 <stop offset="0%" stopColor="#2DD4E0" />
                                 <stop offset="50%" stopColor="#b340bf" />
                                 <stop offset="100%" stopColor="#4530BE" />
+                            </linearGradient>
+                            {/* NUEVO: Degradado Relleno (Sombra Violeta) */}
+                            <linearGradient id="activityFillGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#4530BE" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#4530BE" stopOpacity={0}/>
                             </linearGradient>
                         </defs>
 
@@ -127,16 +131,18 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({ data }) =
                             cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 2 }}
                         />
 
-                        <Line
+                        <Area
                             type="monotone"
                             dataKey="players"
                             stroke="url(#activityChartGradient)"
-                            strokeWidth={5}
+                            fill="url(#activityFillGradient)"
+                            fillOpacity={1}
+                            strokeWidth={4}
                             dot={{ r: 0 }}
                             activeDot={CustomActiveDot}
                             animationDuration={1500}
                         />
-                    </LineChart>
+                    </AreaChart>
                 </ResponsiveContainer>
             </div>
         </div>
@@ -276,8 +282,10 @@ export const MetricsSidebar: React.FC<MetricsSidebarProps> = ({ game, defaultGam
     }, [game, defaultGame]);
 
     return (
-        // RESTAURADO: Se mantiene la estructura 'sticky' con altura calculada para respetar la maquetación original
-        <div className="sticky top-24 flex flex-col justify-between h-[calc(100vh-8rem)] animate-in fade-in slide-in-from-right-4 duration-500 pb-4">
+        // CAMBIO: Usamos 'h-full' en lugar de 'h-[calc(100vh-8rem)]' para que la altura
+        // se adapte exactamente a la del contenedor padre (Grid del Dashboard), alineándose
+        // perfectamente con el menú lateral izquierdo.
+        <div className="sticky top-24 flex flex-col justify-between h-full animate-in fade-in slide-in-from-right-4 duration-500 pb-0">
 
             {/* 1. TARJETA SUPERIOR (PREVIEW) */}
             <div

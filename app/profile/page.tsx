@@ -7,6 +7,7 @@ import {
   Heart, Search, User, Settings, Clock, Trophy, Gamepad2, MapPin, Calendar, Edit2, Medal, Users, Activity, Zap, Crown, Swords, X, Star, Shield, Target, Flame, MessageCircle, MoreHorizontal, Camera, ChevronLeft, Check
 } from 'lucide-react';
 import { VerticalMenu } from '@/components/VerticalMenu';
+import { Header } from '@/components/Header';
 
 // --- PALETA GAMELENS ---
 const PALETTE = {
@@ -106,37 +107,31 @@ const AVATAR_OPTIONS = [
   { 
     id: 'a1', 
     name: 'Cyber Blue', 
-    // SVG: Círculo azul con cara minimalista blanca
     url: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9MTAwIiBmaWxsPSIjNTBhMmZmIi8+PHJlY3QgeD0iMjUiIHk9IjM1IiB3aWR0aD0iMTUiIGhlaWdodD0iMTUiIGZpbGw9IndoaXRlIi8+PHJlY3QgeD0iNjAiIHk9IjM1IiB3aWR0aD0iMTUiIGhlaWdodD0iMTUiIGZpbGw9IndoaXRlIi8+PHJlY3QgeD0iMzAiIHk9IjcwIiB3aWR0aD0iNDAiIGhlaWdodD0iNSIgZmlsbD0id2hpdGUiLz48L3N2Zz4='
   },
   { 
     id: 'a2', 
     name: 'Pixel Green', 
-    // SVG: Cuadrado verde con cara pixelada negra
     url: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9MTAwIiBmaWxsPSIjMDBGRjYyIi8+PHJlY3QgeD0iMjAiIHk9IjMwIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIGZpbGw9ImJsYWNrIi8+PHJlY3QgeD0iNjAiIHk9IjMwIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIGZpbGw9ImJsYWNrIi8+PHJlY3QgeD0iMjAiIHk9IjcwIiB3aWR0aD0iNjAiIGhlaWdodD0iMTAiIGZpbGw9ImJsYWNrIi8+PHJlY3QgeD0iMjAiIHk9IjYwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9ImJsYWNrIi8+PHJlY3QgeD0iNzAiIHk9IjYwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9ImJsYWNrIi8+PC9zdmc+'
   },
   { 
     id: 'a3', 
     name: 'Ghost Purple', 
-    // SVG: Círculo violeta con ojos de fantasma
     url: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9MTAwIiBmaWxsPSIjYTg1NWY3Ii8+PGNpcmNsZSBjeD0iMzUiIGN5PSI0MCIgcj0iOCIgZmlsbD0id2hpdGUiLz48Y2lyY2xlIGN4PSI2NSIgY3k9IjQwIiByPSI4IiBmaWxsPSJ3aGl0ZSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNzAiIHI9IjEyIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg=='
   },
   { 
     id: 'a4', 
     name: 'Red Rival', 
-    // SVG: Cuadrado rojo con visor agresivo
     url: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9MTAwIiBmaWxsPSIjRkY0NDQ0Ii8+PHBhdGggZD0iTTI1IDM1IEw0NSA1MCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNzUgMzUgTDU1IDUwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxyZWN0IHg9IjMwIiB5PSI3MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjUiIGZpbGw9IndoaXRlIi8+PC9zdmc+'
   },
   { 
     id: 'a5', 
     name: 'Yellow Star', 
-    // SVG: Círculo amarillo con gafas de sol/estilo
     url: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9MTAwIiBmaWxsPSIjZWZiNTM3Ii8+PGNpcmNsZSBjeD0iMzAiIGN5PSI0MCIgcj0iMTUiIGZpbGw9ImJsYWNrIi8+PGNpcmNsZSBjeD0iNzAiIGN5PSI0MCIgcj0iMTUiIGZpbGw9ImJsYWNrIi8+PHBhdGggZD0iTTMwIDcwIFE1MCA5MCA3MCA3MCIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIi8+PC9zdmc+'
   },
   { 
     id: 'a6', 
     name: 'Pink Heart', 
-    // SVG: Cuadrado rosa con corazón
     url: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9MTAwIiBmaWxsPSIjZjYzMzlhIi8+PHBhdGggZD0iTTUwIDgwIEwyMCA1MCBRMTAgNDAgMjAgMzAgUTMwIDIwIDQwIDMwIEw1MCA0MCBMNjAgMzAgUTcwIDIwIDgwIDMwIFE5MCA0MCA4MCA1MCBaIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg=='
   },
   // Opción por defecto/vacía
@@ -153,6 +148,7 @@ const initialUserProfile = {
   coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/library_hero.jpg",
   location: "Argentina",
   joinDate: "Nov 2023",
+  favoritePlatform: "PC", // Agregado para compatibilidad con el Header
   level: 42,
   stats: {
     gamesOwned: 148,
@@ -168,13 +164,13 @@ const initialUserProfile = {
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
-  
+   
   // Estado principal del perfil (ahora editable)
   const [userProfile, setUserProfile] = useState(initialUserProfile);
 
   const [hoveredAchievement, setHoveredAchievement] = useState<number | null>(null);
   const [hoveredActivity, setHoveredActivity] = useState<number | null>(null);
-  
+   
   // ESTADO PARA LOS OVERLAYS (MODALES)
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
@@ -308,7 +304,7 @@ export default function ProfilePage() {
                                </div>
                                {editForm.coverUrl === banner.url && (
                                    <div className="absolute top-2 right-2 bg-green-500 rounded-full p-1 shadow-lg">
-                                       <Check size={14} className="text-black" />
+                                        <Check size={14} className="text-black" />
                                    </div>
                                )}
                            </div>
@@ -507,7 +503,7 @@ export default function ProfilePage() {
                     key={ach.id}
                     className="group flex gap-4 p-4 rounded-2xl bg-[#1A1A20] border border-white/5 hover:border-white/10 hover:bg-[#202028] transition-all duration-300 overflow-hidden relative"
                   >
-                    
+                     
                     <div 
                       className="w-16 h-16 shrink-0 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-105"
                       style={{ 
@@ -582,30 +578,30 @@ export default function ProfilePage() {
                     key={game.id}
                     className="flex items-center gap-4 p-4 rounded-2xl bg-[#1A1A20] border border-white/5 hover:border-blue-500/30 hover:bg-[#1e1e26] transition-all duration-300 group"
                   >
-                     <div className="relative w-28 h-16 rounded-xl overflow-hidden shrink-0 shadow-lg group-hover:shadow-blue-500/10 transition-shadow">
-                        <Image src={game.cover} alt={game.name} fill className="object-cover" unoptimized />
-                     </div>
-                     <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start">
-                          <h4 className="font-bold text-white text-lg truncate group-hover:text-blue-400 transition-colors">{game.name}</h4>
-                          <span className="text-xs font-bold text-gray-500 bg-white/5 px-2 py-1 rounded-md border border-white/5">
-                            {game.hours} total
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-400 mt-1 flex items-center gap-2">
-                           {game.time === 'En línea' ? (
-                             <>
-                               <span className="relative flex h-2.5 w-2.5">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-                               </span>
-                               <span className="text-green-400 font-medium">Jugando ahora</span>
-                             </>
-                           ) : (
-                             <span>{game.action} <span className="text-gray-200 font-bold">{game.time}</span></span>
-                           )}
-                        </p>
-                     </div>
+                      <div className="relative w-28 h-16 rounded-xl overflow-hidden shrink-0 shadow-lg group-hover:shadow-blue-500/10 transition-shadow">
+                         <Image src={game.cover} alt={game.name} fill className="object-cover" unoptimized />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                         <div className="flex justify-between items-start">
+                           <h4 className="font-bold text-white text-lg truncate group-hover:text-blue-400 transition-colors">{game.name}</h4>
+                           <span className="text-xs font-bold text-gray-500 bg-white/5 px-2 py-1 rounded-md border border-white/5">
+                             {game.hours} total
+                           </span>
+                         </div>
+                         <p className="text-sm text-gray-400 mt-1 flex items-center gap-2">
+                            {game.time === 'En línea' ? (
+                              <>
+                                <span className="relative flex h-2.5 w-2.5">
+                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                                </span>
+                                <span className="text-green-400 font-medium">Jugando ahora</span>
+                              </>
+                            ) : (
+                              <span>{game.action} <span className="text-gray-200 font-bold">{game.time}</span></span>
+                            )}
+                         </p>
+                      </div>
                   </div>
                 ))}
               </div>
@@ -734,15 +730,15 @@ export default function ProfilePage() {
                       key={friend.id}
                       className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 transition-all duration-300 group"
                     >
-                       <div className="relative shrink-0">
+                        <div className="relative shrink-0">
                           <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center border border-white/5 group-hover:border-white/20 transition-colors">
                               <User size={20} className="text-gray-500 group-hover:text-white transition-colors" />
                           </div>
                           {friend.isOnline && (
                               <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#131119] rounded-full"></div>
                           )}
-                       </div>
-                       <div className="flex-1 min-w-0">
+                        </div>
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                              <h4 className="font-bold text-white text-base truncate">{friend.name}</h4>
                              <span className="text-[10px] font-bold text-gray-500 bg-white/5 px-1.5 py-0.5 rounded border border-white/5">Lvl {friend.level}</span>
@@ -750,15 +746,15 @@ export default function ProfilePage() {
                           <p className={`text-sm truncate ${friend.isOnline ? 'text-green-400 font-medium' : 'text-gray-500'}`}>
                              {friend.status}
                           </p>
-                       </div>
-                       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors" title="Enviar mensaje">
                              <MessageCircle size={18} />
                           </button>
                           <button className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
                              <MoreHorizontal size={18} />
                           </button>
-                       </div>
+                        </div>
                     </div>
                   ))
                 ) : (
@@ -782,52 +778,8 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* 1. Header (Sticky) con Logo GameLens */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 md:px-10 border-b border-white/5 bg-[#131119]/80 backdrop-blur-xl shrink-0">
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10">
-              <Image 
-                src="/Logo_Game.svg" 
-                alt="GameLens Logo" 
-                width={40} 
-                height={40} 
-                className="object-contain" 
-                priority 
-              />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 hidden sm:block font-display">
-              GameLens
-            </h1>
-          </div>
-          <div className="relative hidden md:block group ml-14">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors" size={16} />
-            <input 
-              type="text" 
-              placeholder="Buscar juegos, creadores..." 
-              className="bg-white/5 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm text-gray-300 focus:outline-none focus:bg-neutral-900 focus:border-blue-500/50 focus:text-white focus:ring-1 focus:ring-blue-500/20 transition-all w-64 lg:w-80 placeholder:text-gray-600"
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-4 md:gap-6">
-          <Link href="/favorites" className="flex items-center gap-2 px-4 py-2 bg-pink-600/20 hover:bg-pink-600/40 text-pink-500 rounded-full transition-colors font-semibold border border-pink-600/50">
-            <Heart size={18} fill="currentColor" />
-            <span className="hidden sm:inline">Favoritos</span>
-          </Link>
-          <div className="h-8 w-px bg-white/10 hidden sm:block"></div>
-          <div className="flex items-center gap-3 pl-2">
-            <div className="text-right hidden md:block">
-              <p className="text-sm font-bold text-white leading-none">{userProfile.name}</p>
-              <p className="text-xs text-blue-400 font-medium mt-1">PC</p>
-            </div>
-            <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-blue-500 to-purple-500">
-              <div className="w-full h-full rounded-full bg-neutral-900 flex items-center justify-center overflow-hidden">
-                 <User size={20} className="text-gray-400" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* 1. Header (Sticky) Reemplazado por Componente */}
+      <Header user={userProfile} />
       
       {/* 2. Main Wrapper */}
       <main className="flex-1 px-6 md:px-10 max-w-[1920px] mx-auto w-full relative flex flex-col">

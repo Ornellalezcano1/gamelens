@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { 
-  Heart, Search, User, Bell, Shield, 
+  User, Bell, Shield, 
   Gamepad2, Globe, Mail, Lock, LogOut, 
   AlertTriangle, Save, Smartphone, Eye
 } from 'lucide-react';
 import { VerticalMenu } from '@/components/VerticalMenu';
+import { Header } from '@/components/Header';
 
 // --- PALETA GAMELENS ---
 const PALETTE = {
@@ -25,6 +25,14 @@ const PALETTE = {
   GRIS: '#9CA3AF'
 };
 
+// --- TIPOS LOCALES ---
+interface UserData {
+  id?: number;
+  name: string;
+  avatarUrl: string;
+  favoritePlatform: string;
+}
+
 // --- ESTILOS CSS PUROS PARA ICONOS (Solo para Discord) ---
 const iconStyle = {
   width: '24px',
@@ -40,7 +48,7 @@ const DiscordIcon = () => (
   </svg>
 );
 
-// --- COMPONENTE: TOGGLE SWITCH (MEJORADO) ---
+// --- COMPONENTE: TOGGLE SWITCH ---
 const ToggleSwitch = ({ checked, onChange, color = PALETTE.VERDE }: { checked: boolean; onChange: () => void; color?: string }) => (
   <button 
     onClick={onChange}
@@ -51,19 +59,20 @@ const ToggleSwitch = ({ checked, onChange, color = PALETTE.VERDE }: { checked: b
   </button>
 );
 
-// Definición de tipos para las conexiones para mayor claridad
+// Definición de tipos para las conexiones
 type Connection = {
   id: string;
   name: string;
   connected: boolean;
   user: string;
   color: string;
-  image?: string; // Ruta al archivo en /public
-  icon?: React.FC<React.SVGProps<SVGSVGElement>>; // Componente SVG inline (para Discord)
+  image?: string;
+  icon?: React.FC<React.SVGProps<SVGSVGElement>>;
 };
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<UserData | null>(null);
   const [activeTab, setActiveTab] = useState<'account' | 'connections' | 'privacy' | 'notifications'>('account');
 
   // --- ESTADOS DEL FORMULARIO ---
@@ -89,16 +98,16 @@ export default function SettingsPage() {
       name: 'Steam', 
       connected: true, 
       user: 'Valen_Dev', 
-      color: '#171a21', // Fondo oscuro
-      image: '/Steam.svg' // Archivo en public
+      color: '#171a21', 
+      image: '/Steam.svg' 
     },
     { 
       id: 'epic', 
       name: 'Epic Games', 
       connected: true, 
       user: 'Valen_Dev', 
-      color: '#2a2a2a', // Fondo gris oscuro Epic
-      image: '/Epic.svg' // Archivo en public
+      color: '#2a2a2a', 
+      image: '/Epic.svg' 
     },
     { 
       id: 'discord', 
@@ -106,7 +115,7 @@ export default function SettingsPage() {
       connected: true, 
       user: 'Valentin#0001', 
       color: '#5865F2',
-      icon: DiscordIcon // Mantenemos el componente inline
+      icon: DiscordIcon 
     },
     { 
       id: 'psn', 
@@ -114,7 +123,7 @@ export default function SettingsPage() {
       connected: false, 
       user: '', 
       color: '#003791',
-      image: '/Play.svg' // Archivo en public
+      image: '/Play.svg' 
     },
     { 
       id: 'xbox', 
@@ -122,12 +131,16 @@ export default function SettingsPage() {
       connected: false, 
       user: '', 
       color: '#107C10', 
-      image: '/Xbox.svg' // Archivo en public
+      image: '/Xbox.svg' 
     },
   ]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 500);
+    const mockUser = { name: 'Valentín', favoritePlatform: 'PC', avatarUrl: '' };
+    const timer = setTimeout(() => {
+        setUser(mockUser);
+        setLoading(false);
+    }, 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -138,6 +151,9 @@ export default function SettingsPage() {
   if (loading) {
     return <div className="h-screen flex items-center justify-center text-white bg-[#131119]">Cargando configuración...</div>;
   }
+
+  // Usuario seguro para el Header
+  const safeUser = user || { name: 'Guest', favoritePlatform: 'PC', avatarUrl: '' };
 
   // --- RENDERIZADO DE CONTENIDO SEGÚN TAB ---
   const renderContent = () => {
@@ -261,7 +277,7 @@ export default function SettingsPage() {
               <p className="text-gray-400 text-sm mb-6">Estas acciones son irreversibles. Ten cuidado.</p>
               <div className="flex flex-col sm:flex-row gap-4">
                  <button className="px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold text-sm rounded-xl border border-red-500/20 hover:border-red-500/40 transition-all">
-                    Eliminar Cuenta
+                   Eliminar Cuenta
                  </button>
                  <button className="px-5 py-2.5 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white font-bold text-sm rounded-xl transition-all flex items-center gap-2">
                     <LogOut size={16} /> Cerrar Sesión en todos lados
@@ -345,7 +361,6 @@ export default function SettingsPage() {
         return (
           <div className="space-y-6 animate-fadeIn">
              <div className="bg-[#1A1A20] border border-white/5 rounded-2xl p-6 md:p-8">
-                {/* ICONO Y TEXTO ACTUALIZADOS A MORADO */}
                 <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                     <Eye size={20} className="text-purple-500" /> Privacidad y Visibilidad
                 </h3>
@@ -373,7 +388,6 @@ export default function SettingsPage() {
         return (
           <div className="space-y-6 animate-fadeIn">
               <div className="bg-[#1A1A20] border border-white/5 rounded-2xl p-6 md:p-8">
-                {/* ICONO Y TEXTO ACTUALIZADOS A AMARILLO */}
                 <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                     <Bell size={20} className="text-yellow-500" /> Preferencias de Notificaciones
                 </h3>
@@ -441,52 +455,8 @@ export default function SettingsPage() {
             }
         `}</style>
 
-      {/* 1. HEADER (Idéntico a Profile Page) */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 md:px-10 border-b border-white/5 bg-[#131119]/80 backdrop-blur-xl shrink-0">
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10">
-              <Image 
-                src="/Logo_Game.svg" 
-                alt="GameLens Logo" 
-                width={40} 
-                height={40} 
-                className="object-contain" 
-                priority 
-              />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 hidden sm:block font-display">
-              GameLens
-            </h1>
-          </div>
-          <div className="relative hidden md:block group ml-14">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors" size={16} />
-            <input 
-              type="text" 
-              placeholder="Buscar juegos, creadores..." 
-              className="bg-white/5 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm text-gray-300 focus:outline-none focus:bg-neutral-900 focus:border-blue-500/50 focus:text-white focus:ring-1 focus:ring-blue-500/20 transition-all w-64 lg:w-80 placeholder:text-gray-600"
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-4 md:gap-6">
-          <Link href="/favorites" className="flex items-center gap-2 px-4 py-2 bg-pink-600/20 hover:bg-pink-600/40 text-pink-500 rounded-full transition-colors font-semibold border border-pink-600/50">
-            <Heart size={18} fill="currentColor" />
-            <span className="hidden sm:inline">Favoritos</span>
-          </Link>
-          <div className="h-8 w-px bg-white/10 hidden sm:block"></div>
-          <div className="flex items-center gap-3 pl-2">
-            <div className="text-right hidden md:block">
-              <p className="text-sm font-bold text-white leading-none">Valentín</p>
-              <p className="text-xs text-blue-400 font-medium mt-1">PC</p>
-            </div>
-            <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-blue-500 to-purple-500">
-              <div className="w-full h-full rounded-full bg-neutral-900 flex items-center justify-center overflow-hidden">
-                 <User size={20} className="text-gray-400" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* 1. HEADER INTEGRADO */}
+      <Header user={safeUser} />
       
       {/* 2. MAIN WRAPPER */}
       <main className="flex-1 px-6 md:px-10 max-w-[1920px] mx-auto w-full relative flex flex-col">

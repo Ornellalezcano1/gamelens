@@ -4,43 +4,50 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { 
   Mail, 
   Lock, 
+  User,
   ArrowRight, 
-  Loader2, 
-  AlertCircle 
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Redirigir al home tras un login exitoso
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Actualizamos el perfil del usuario con su nombre de gamer
+      await updateProfile(userCredential.user, {
+        displayName: username
+      });
+
+      // Redirigir al dashboard después del registro exitoso
       router.push('/'); 
     } catch (err: unknown) {
       const errorBody = err as { code?: string };
-      console.error("Login error:", err);
+      console.error("Registration error:", err);
       
-      // Manejo de errores específicos de Firebase
-      if (errorBody.code === 'auth/invalid-credential' || errorBody.code === 'auth/user-not-found' || errorBody.code === 'auth/wrong-password') {
-        setError('Credenciales incorrectas. Por favor verifica tu correo y contraseña.');
-      } else if (errorBody.code === 'auth/too-many-requests') {
-        setError('Demasiados intentos fallidos. Intenta de nuevo más tarde.');
+      if (errorBody.code === 'auth/email-already-in-use') {
+        setError('Este correo ya está registrado en GameLens.');
+      } else if (errorBody.code === 'auth/weak-password') {
+        setError('La contraseña debe tener al menos 6 caracteres.');
       } else {
-        setError('Ocurrió un error al iniciar sesión. Intenta nuevamente.');
+        setError('Ocurrió un error al crear la cuenta. Intenta nuevamente.');
       }
     } finally {
       setLoading(false);
@@ -50,7 +57,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
       
-      {/* Fondo Mesh Gradient Estilo GameLens */}
+      {/* Fondo Mesh Gradient (Mismo estilo que Login) */}
       <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-purple-600/30 rounded-full blur-[120px] mix-blend-screen animate-pulse" style={{ animationDuration: '4s' }} />
         <div className="absolute top-[20%] right-[-5%] w-[35vw] h-[35vw] bg-cyan-600/20 rounded-full blur-[100px] mix-blend-screen" />
@@ -60,24 +67,18 @@ export default function LoginPage() {
       
       <div className="w-full max-w-md bg-neutral-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-8 relative z-10 flex flex-col gap-6">
         
-        {/* Logo con animación de rotación suave */}
+        {/* Encabezado con LOGO animado */}
         <div className="flex flex-col items-center justify-center space-y-4 mb-2">
           <div className="relative w-24 h-24 transition-transform duration-700 ease-in-out hover:rotate-[360deg] cursor-pointer group">
             <div className="absolute inset-0 bg-purple-500/30 rounded-full blur-2xl opacity-50 animate-pulse z-0"></div>
             <div className="relative z-10 w-full h-full">
-              <Image 
-                src="/Logo_Game.svg" 
-                alt="GameLens Logo" 
-                fill 
-                className="object-contain" 
-                priority 
-              />
+                <Image src="/Logo_Game.svg" alt="GameLens Logo" fill className="object-contain" priority />
             </div>
           </div>
           
           <div className="text-center space-y-1">
-            <h1 className="text-3xl font-bold text-white tracking-tight">¡Bienvenido!</h1>
-            <p className="text-gray-400 text-sm">Que bueno verte de nuevo, GameLens te espera</p>
+            <h1 className="text-3xl font-bold text-white tracking-tight">Crea tu Cuenta</h1>
+            <p className="text-gray-400 text-sm">Únete a la comunidad líder de GameLens</p>
           </div>
         </div>
 
@@ -88,8 +89,26 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-5">
-          {/* Campo Email */}
+        <form onSubmit={handleRegister} className="space-y-4">
+          {/* Input Username */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Gamer ID</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <User size={18} className="text-gray-500 group-focus-within:text-purple-400 transition-colors" />
+              </div>
+              <input 
+                type="text" 
+                required
+                className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-3.5 pl-11 pr-4 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all placeholder:text-gray-600 text-sm"
+                placeholder="Tu alias"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Input Email */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email</label>
             <div className="relative group">
@@ -107,12 +126,9 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Campo Contraseña */}
+          {/* Input Password */}
           <div className="space-y-1.5">
-            <div className="flex justify-between items-center ml-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Contraseña</label>
-                <Link href="#" className="text-xs text-purple-400 hover:text-purple-300 transition-colors">¿Olvidaste tu contraseña?</Link>
-            </div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Contraseña</label>
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Lock size={18} className="text-gray-500 group-focus-within:text-purple-400 transition-colors" />
@@ -121,27 +137,26 @@ export default function LoginPage() {
                 type="password" 
                 required
                 className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-3.5 pl-11 pr-4 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all placeholder:text-gray-600 text-sm"
-                placeholder="••••••••"
+                placeholder="Mínimo 6 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           </div>
 
-          {/* Botón Principal */}
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-[length:200%_auto] hover:bg-right transition-all duration-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-purple-900/20 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 mt-2"
+            className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-[length:200%_auto] hover:bg-right transition-all duration-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-purple-900/20 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 mt-4"
           >
             {loading ? (
               <>
                 <Loader2 size={20} className="animate-spin" />
-                <span>Iniciando...</span>
+                <span>Creando cuenta...</span>
               </>
             ) : (
               <>
-                <span>Iniciar Sesión</span>
+                <span>Unirme ahora</span>
                 <ArrowRight size={20} />
               </>
             )}
@@ -153,11 +168,10 @@ export default function LoginPage() {
             <div className="w-full border-t border-white/10"></div>
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-[#121212] px-2 text-gray-500">O continúa con</span>
+            <span className="bg-[#121212] px-2 text-gray-500">O regístrate con</span>
           </div>
         </div>
 
-        {/* Botones de Terceros */}
         <div className="grid grid-cols-2 gap-3">
             <button className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/5 text-gray-300 hover:text-white py-2.5 rounded-xl transition-all text-sm font-medium hover:border-white/20 hover:bg-[#EA4335]/20 hover:text-[#EA4335] group">
                 <svg className="w-4 h-4 group-hover:fill-current" viewBox="0 0 24 24" fill="currentColor">
@@ -173,11 +187,10 @@ export default function LoginPage() {
             </button>
         </div>
 
-        {/* Enlace al Registro */}
         <p className="text-center text-sm text-gray-500">
-          ¿No tienes una cuenta?{' '}
-          <Link href="/sign-up" className="text-purple-400 font-semibold hover:text-purple-300 transition-colors">
-            Regístrate
+          ¿Ya tienes cuenta?{' '}
+          <Link href="/login" className="text-purple-400 font-semibold hover:text-purple-300 transition-colors">
+            Inicia Sesión
           </Link>
         </p>
 
