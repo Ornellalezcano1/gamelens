@@ -4,7 +4,12 @@ import { Dashboard } from '@/components/Dashboard';
 
 // 1. Función para obtener los datos de la API falsa (Home)
 async function getHomeData(): Promise<HomeData> {
-  const res = await fetch('http://localhost:3000/api/home', { 
+  // Detectamos la URL base: 
+  // 1. Usamos una variable de entorno personalizada si existe.
+  // 2. Fallback a localhost:3000 para desarrollo local.
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
+  const res = await fetch(`${baseUrl}/api/home`, { 
     cache: 'no-store' 
   });
   
