@@ -41,7 +41,7 @@ const iconStyle = {
   display: 'block'
 };
 
-// --- ICONOS INLINE (Solo Discord, el resto usa archivos de public/) ---
+// --- ICONOS INLINE (Solo Discord) ---
 const DiscordIcon = () => (
   <svg viewBox="0 0 24 24" style={iconStyle} xmlns="http://www.w3.org/2000/svg">
     <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
@@ -52,7 +52,7 @@ const DiscordIcon = () => (
 const ToggleSwitch = ({ checked, onChange, color = PALETTE.VERDE }: { checked: boolean; onChange: () => void; color?: string }) => (
   <button 
     onClick={onChange}
-    className={`w-12 h-6 rounded-full relative transition-all duration-300 focus:outline-none hover:opacity-90 active:scale-95 ${checked ? '' : 'bg-white/10 hover:bg-white/20'}`}
+    className={`w-12 h-6 rounded-full relative transition-all duration-300 focus:outline-none hover:opacity-90 active:scale-95 shrink-0 ${checked ? '' : 'bg-white/10 hover:bg-white/20'}`}
     style={{ backgroundColor: checked ? color : undefined }}
   >
     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 shadow-md ${checked ? 'left-7' : 'left-1'}`} />
@@ -152,10 +152,8 @@ export default function SettingsPage() {
     return <div className="h-screen flex items-center justify-center text-white bg-[#131119]">Cargando configuración...</div>;
   }
 
-  // Usuario seguro para el Header
   const safeUser = user || { name: 'Guest', favoritePlatform: 'PC', avatarUrl: '' };
 
-  // --- RENDERIZADO DE CONTENIDO SEGÚN TAB ---
   const renderContent = () => {
     switch (activeTab) {
       case 'account':
@@ -244,9 +242,10 @@ export default function SettingsPage() {
                 <Shield size={20} className="text-green-500" /> Seguridad
               </h3>
               <div className="space-y-6">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-[#131119] border border-white/5 hover:border-green-500/30 hover:bg-[#1f1f25] transition-all duration-300">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 rounded-lg bg-green-500/10 text-green-500">
+                {/* 2FA: Stack en móvil para evitar desborde */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-[#131119] border border-white/5 hover:border-green-500/30 hover:bg-[#1f1f25] transition-all duration-300 gap-4">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="p-2 rounded-lg bg-green-500/10 text-green-500 shrink-0">
                       <Lock size={20} />
                     </div>
                     <div>
@@ -254,15 +253,17 @@ export default function SettingsPage() {
                       <p className="text-sm text-gray-500">Añade una capa extra de seguridad.</p>
                     </div>
                   </div>
-                  <ToggleSwitch checked={formData.twoFactor} onChange={() => setFormData({...formData, twoFactor: !formData.twoFactor})} />
+                  <div className="self-end sm:self-center">
+                    <ToggleSwitch checked={formData.twoFactor} onChange={() => setFormData({...formData, twoFactor: !formData.twoFactor})} />
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between border-t border-white/5 pt-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-white/5 pt-4 gap-4">
                   <div className="space-y-1">
                     <p className="font-bold text-white">Contraseña</p>
                     <p className="text-sm text-gray-500">Último cambio hace 3 meses</p>
                   </div>
-                  <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-bold rounded-lg border border-white/10 hover:border-white/30 transition-all">
+                  <button className="w-full sm:w-auto px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-bold rounded-lg border border-white/10 hover:border-white/30 transition-all">
                     Cambiar
                   </button>
                 </div>
@@ -276,10 +277,10 @@ export default function SettingsPage() {
               </h3>
               <p className="text-gray-400 text-sm mb-6">Estas acciones son irreversibles. Ten cuidado.</p>
               <div className="flex flex-col sm:flex-row gap-4">
-                 <button className="px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold text-sm rounded-xl border border-red-500/20 hover:border-red-500/40 transition-all">
+                 <button className="w-full sm:w-auto px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold text-sm rounded-xl border border-red-500/20 hover:border-red-500/40 transition-all text-center">
                    Eliminar Cuenta
                  </button>
-                 <button className="px-5 py-2.5 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white font-bold text-sm rounded-xl transition-all flex items-center gap-2">
+                 <button className="w-full sm:w-auto px-5 py-2.5 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2">
                     <LogOut size={16} /> Cerrar Sesión en todos lados
                  </button>
               </div>
@@ -300,15 +301,16 @@ export default function SettingsPage() {
 
                <div className="grid grid-cols-1 gap-4">
                   {connections.map((conn) => (
+                    // Responsive: Flex-col en móvil para que el botón pase abajo
                     <div 
                       key={conn.id}
-                      className={`relative flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${
+                      className={`relative flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl border transition-all duration-300 gap-4 ${
                         conn.connected 
                         ? 'bg-[#131119] border-green-500/30 shadow-[0_0_15px_-5px_rgba(0,255,98,0.1)] hover:shadow-[0_0_20px_-5px_rgba(0,255,98,0.2)] hover:border-green-500/50' 
                         : 'bg-[#131119]/50 border-white/5 hover:border-white/20 hover:bg-white/5'
                       }`}
                     >
-                        <div className="flex items-center gap-4 md:gap-6">
+                        <div className="flex items-center gap-4 md:gap-6 w-full sm:w-auto">
                             {/* CONTENEDOR DEL ICONO */}
                             <div 
                               className={`w-14 h-14 rounded-xl flex items-center justify-center relative overflow-hidden shrink-0 transition-colors ${conn.connected ? 'text-white' : 'text-gray-500'}`} 
@@ -327,12 +329,12 @@ export default function SettingsPage() {
                                   conn.icon && <conn.icon />
                                 )}
                             </div>
-                            <div>
-                                <h4 className="font-bold text-white text-lg">{conn.name}</h4>
+                            <div className="min-w-0 flex-1">
+                                <h4 className="font-bold text-white text-lg truncate">{conn.name}</h4>
                                 {conn.connected ? (
                                     <div className="flex items-center gap-2 mt-0.5">
-                                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                        <p className="text-sm text-gray-300 font-medium">Conectado como <span className="text-white">{conn.user}</span></p>
+                                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" />
+                                        <p className="text-sm text-gray-300 font-medium truncate">Conectado como <span className="text-white">{conn.user}</span></p>
                                     </div>
                                 ) : (
                                     <p className="text-sm text-gray-500 mt-0.5">No conectado</p>
@@ -342,7 +344,7 @@ export default function SettingsPage() {
                         
                         <button 
                             onClick={() => handleToggleConnection(conn.id)}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                            className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                                 conn.connected 
                                 ? 'bg-white/5 text-gray-400 hover:text-white hover:bg-red-500/10 hover:text-red-500 border border-transparent hover:border-red-500/30' 
                                 : 'bg-white text-black hover:bg-gray-200 shadow-lg hover:scale-105 active:scale-95'
@@ -371,12 +373,14 @@ export default function SettingsPage() {
                         { label: "Mostrar Actividad de Juego", desc: "Muestra qué estás jugando en tiempo real.", state: formData.showActivity, key: 'showActivity' },
                         { label: "Permitir Solicitudes de Amistad", desc: "Los usuarios pueden enviarte invitaciones.", state: formData.allowFriendRequests, key: 'allowFriendRequests' },
                     ].map((item, i) => (
-                        <div key={i} className="p-4 rounded-xl bg-[#131119] border border-white/5 flex items-center justify-between hover:border-purple-500/30 hover:bg-[#1A1A20] transition-all duration-300">
-                             <div>
+                        <div key={i} className="p-4 rounded-xl bg-[#131119] border border-white/5 flex items-center justify-between hover:border-purple-500/30 hover:bg-[#1A1A20] transition-all duration-300 gap-4">
+                             <div className="flex-1 min-w-0">
                                 <p className="font-bold text-white text-base">{item.label}</p>
-                                <p className="text-sm text-gray-500 mt-1">{item.desc}</p>
+                                <p className="text-sm text-gray-500 mt-1 pr-2">{item.desc}</p>
                              </div>
-                             <ToggleSwitch checked={item.state} onChange={() => setFormData({ ...formData, [item.key as keyof typeof formData]: !item.state })} color={PALETTE.VIOLETA} />
+                             <div className="shrink-0">
+                                <ToggleSwitch checked={item.state} onChange={() => setFormData({ ...formData, [item.key as keyof typeof formData]: !item.state })} color={PALETTE.VIOLETA} />
+                             </div>
                         </div>
                     ))}
                 </div>
@@ -393,37 +397,43 @@ export default function SettingsPage() {
                 </h3>
                 
                 <div className="space-y-6">
-                    <div className="p-4 rounded-xl bg-[#131119] border border-white/5 flex items-center justify-between hover:border-yellow-500/30 hover:bg-[#1A1A20] transition-all duration-300">
-                        <div className="flex items-center gap-4">
-                             <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500"><Mail size={20}/></div>
+                    <div className="p-4 rounded-xl bg-[#131119] border border-white/5 flex items-center justify-between hover:border-yellow-500/30 hover:bg-[#1A1A20] transition-all duration-300 gap-4">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                             <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500 shrink-0"><Mail size={20}/></div>
                              <div>
                                 <p className="font-bold text-white">Correos Electrónicos</p>
                                 <p className="text-sm text-gray-500">Resumen semanal, seguridad y soporte.</p>
                              </div>
                         </div>
-                        <ToggleSwitch checked={formData.emailNotifs} onChange={() => setFormData({...formData, emailNotifs: !formData.emailNotifs})} color={PALETTE.AMARILLO} />
+                        <div className="shrink-0">
+                            <ToggleSwitch checked={formData.emailNotifs} onChange={() => setFormData({...formData, emailNotifs: !formData.emailNotifs})} color={PALETTE.AMARILLO} />
+                        </div>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-[#131119] border border-white/5 flex items-center justify-between hover:border-yellow-500/30 hover:bg-[#1A1A20] transition-all duration-300">
-                        <div className="flex items-center gap-4">
-                             <div className="p-2 rounded-lg bg-pink-500/10 text-pink-500"><Smartphone size={20}/></div>
+                    <div className="p-4 rounded-xl bg-[#131119] border border-white/5 flex items-center justify-between hover:border-yellow-500/30 hover:bg-[#1A1A20] transition-all duration-300 gap-4">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                             <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500 shrink-0"><Smartphone size={20}/></div>
                              <div>
                                 <p className="font-bold text-white">Notificaciones Push</p>
                                 <p className="text-sm text-gray-500">Alertas en tiempo real en tu dispositivo.</p>
                              </div>
                         </div>
-                        <ToggleSwitch checked={formData.pushNotifs} onChange={() => setFormData({...formData, pushNotifs: !formData.pushNotifs})} color={PALETTE.AMARILLO} />
+                        <div className="shrink-0">
+                            <ToggleSwitch checked={formData.pushNotifs} onChange={() => setFormData({...formData, pushNotifs: !formData.pushNotifs})} color={PALETTE.AMARILLO} />
+                        </div>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-[#131119] border border-white/5 flex items-center justify-between hover:border-yellow-500/30 hover:bg-[#1A1A20] transition-all duration-300">
-                        <div className="flex items-center gap-4">
-                             <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500"><Gamepad2 size={20}/></div>
+                    <div className="p-4 rounded-xl bg-[#131119] border border-white/5 flex items-center justify-between hover:border-yellow-500/30 hover:bg-[#1A1A20] transition-all duration-300 gap-4">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                             <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500 shrink-0"><Gamepad2 size={20}/></div>
                              <div>
                                 <p className="font-bold text-white">Novedades y Ofertas</p>
                                 <p className="text-sm text-gray-500">Noticias sobre juegos en tu wishlist.</p>
                              </div>
                         </div>
-                        <ToggleSwitch checked={formData.marketingEmails} onChange={() => setFormData({...formData, marketingEmails: !formData.marketingEmails})} color={PALETTE.AMARILLO} />
+                        <div className="shrink-0">
+                            <ToggleSwitch checked={formData.marketingEmails} onChange={() => setFormData({...formData, marketingEmails: !formData.marketingEmails})} color={PALETTE.AMARILLO} />
+                        </div>
                     </div>
                 </div>
               </div>
@@ -466,7 +476,6 @@ export default function SettingsPage() {
           {/* Menú Lateral */}
           <aside className="hidden md:block w-[260px] shrink-0 relative">
              <div className="sticky top-[74px] pt-10 pb-10 h-[calc(100vh-74px)] overflow-y-auto no-scrollbar">
-                {/* Cambiamos activeItem a 'settings' si tu componente VerticalMenu lo soporta, o lo mantenemos para consistencia visual */}
                 <VerticalMenu activeItem="settings" />
              </div>
           </aside>
@@ -474,13 +483,13 @@ export default function SettingsPage() {
           {/* Área Derecha: Contenido de Settings */}
           <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10">
             
-            {/* Header de la Página */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            {/* Header de la Página - CENTRADO EN MÓVIL */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-4 text-center md:text-left">
                 <div>
                     <h2 className="text-2xl font-bold text-white mb-1 tracking-tight">Configuración</h2>
                     <p className="text-gray-400 text-sm">Administra tu cuenta, conexiones y preferencias de GameLens.</p>
                 </div>
-                <button className="flex items-center gap-2 px-6 py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-all duration-300 shadow-lg shadow-white/5 hover:scale-105 active:scale-95">
+                <button className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-all duration-300 shadow-lg shadow-white/5 hover:scale-105 active:scale-95">
                     <Save size={18} />
                     Guardar Cambios
                 </button>

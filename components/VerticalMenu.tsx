@@ -1,14 +1,11 @@
-'use client'; // Necesario para usar onClick y useRouter en Next.js App Router
+'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // Importamos el hook de navegación
-// CAMBIO: Importamos 'auth' desde nuestra configuración centralizada
-// Esto asegura que Firebase esté inicializado antes de usarlo
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase'; 
-
+import { useRouter, usePathname } from 'next/navigation'; // Agregamos usePathname
+// import { signOut } from 'firebase/auth'; // Descomenta en producción
+// import { auth } from '@/lib/firebase';   // Descomenta en producción
 import { 
+  X, 
   LayoutDashboard, 
   Gamepad2, 
   TrendingUp, 
@@ -18,162 +15,221 @@ import {
   Settings, 
   LogOut 
 } from 'lucide-react';
+import Link from 'next/link';
+
+// --- MOCK AUTH (Borrar en producción) ---
+const signOut = async () => console.log('Cerrando sesión...');
+// ---------------------------------------
 
 interface VerticalMenuProps {
-  // Tipos permitidos para resaltar el ítem activo
-  activeItem?: 'home' | 'all-games' | 'favorites' | 'top-selling' | 'most-played' | 'profile' | 'settings';
+  // Ya no es estrictamente necesaria la prop activeItem porque lo calculamos con el pathname,
+  // pero la dejamos opcional por si quieres forzar un estado.
+  activeItem?: string; 
+  isOpen?: boolean;     
+  onClose?: () => void; 
 }
 
-export const VerticalMenu = ({ activeItem = 'home' }: VerticalMenuProps) => {
-  const router = useRouter(); // Inicializamos el router
+export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
+  const router = useRouter(); 
+  const pathname = usePathname(); // Obtenemos la ruta actual para el estado activo
   
-  // Función para manejar el cierre de sesión
   const handleLogout = async () => {
-    // Ya no necesitamos 'const auth = getAuth();' aquí, usamos el importado
     try {
-      await signOut(auth);
+      await signOut();
       console.log("Sesión cerrada correctamente");
-      // Redirigir al usuario al Login después de cerrar sesión
+      // Cerramos el menú también al salir
+      if (onClose) onClose();
       router.push('/login');
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     }
   };
 
+  // Helper para manejar el clic en enlaces (Navegar y Cerrar)
+  const handleLinkClick = () => {
+    if (onClose) onClose();
+  };
+
+  // Función para determinar si un ítem está activo basado en la URL
+  const getLinkClass = (path: string, itemKey: string) => {
+    // Es activo si el pathname coincide exactamente con el path
+    const isActive = pathname === path;
+    
+    const baseClass = "flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group";
+    
+    // Mapa de colores para cada sección
+    const colors: Record<string, string> = {
+      'home': 'text-[#50a2ff] bg-[#50a2ff]/10 border-[#50a2ff]/20',
+      'all-games': 'text-[#C471F2] bg-[#C471F2]/10 border-[#C471F2]/20',
+      'top-selling': 'text-[#00FF62] bg-[#00FF62]/10 border-[#00FF62]/20',
+      'most-played': 'text-[#efb537] bg-[#efb537]/10 border-[#efb537]/20',
+      'favorites': 'text-[#f6339a] bg-[#f6339a]/10 border-[#f6339a]/20',
+      'profile': 'text-[#2DD4E0] bg-[#2DD4E0]/10 border-[#2DD4E0]/20',
+      'settings': 'text-white bg-white/10 border-white/10'
+    };
+
+    if (isActive) {
+      return `${baseClass} ${colors[itemKey] || ''} border font-semibold`;
+    }
+    
+    const hoverClass: Record<string, string> = {
+        'home': 'hover:text-[#50a2ff] hover:bg-[#50a2ff]/10',
+        'all-games': 'hover:text-[#C471F2] hover:bg-[#C471F2]/10',
+        'top-selling': 'hover:text-[#00FF62] hover:bg-[#00FF62]/10',
+        'most-played': 'hover:text-[#efb537] hover:bg-[#efb537]/10',
+        'favorites': 'hover:text-[#f6339a] hover:bg-[#f6339a]/10',
+        'profile': 'hover:text-[#2DD4E0] hover:bg-[#2DD4E0]/10',
+        'settings': 'hover:text-white hover:bg-white/5'
+    };
+
+    return `${baseClass} text-gray-400 ${hoverClass[itemKey] || ''}`;
+  };
+
   return (
-    <div className="flex flex-col h-full gap-6">
-      
-      {/* 1. Contenedor del Menú Principal */}
-      <div className="bg-neutral-900/50 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-xl">
+    <>
+      {/* 1. OVERLAY OSCURO (Fondo)
+          - z-[9998]: Muy alto para tapar todo el contenido.
+          - pointer-events: Controla si bloquea o no los clics.
+          - fixed inset-0: Cubre toda la pantalla y no se mueve con scroll.
+      */}
+      <div 
+        className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] lg:hidden transition-opacity duration-300 ${
+          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={onClose}
+        // Prevenir scroll en el body cuando el overlay está activo (opcional, pero buena práctica)
+        // style={{ touchAction: 'none' }} 
+      />
+
+      {/* 2. CAJÓN DEL MENÚ
+          - z-[9999]: El elemento más alto de la página.
+          - fixed inset-y-0 left-0: Fijo a la altura total del viewport, pegado a la izquierda.
+            Esto asegura que "por más que scrollees no cambie".
+      */}
+      <div className={`
+        flex flex-col gap-4 lg:gap-6
+        /* Estilos Móvil: Drawer Fixed + Inset-y-0 para altura completa fija */
+        fixed inset-y-0 left-0 z-[9999] w-72 bg-[#131119] p-4 border-r border-white/10 transition-transform duration-300 ease-in-out shadow-2xl
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         
-        {/* Sección Superior: Navegación Principal */}
-        <nav className="space-y-2">
-          <p className="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Menu Principal</p>
-          
-          {/* HOME */}
-          <Link 
-            href="/" 
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all group mt-3 ${
-              activeItem === 'home' 
-                ? 'bg-[#50a2ff]/10 border border-[#50a2ff]/20 text-[#50a2ff]' 
-                : 'text-gray-400 hover:text-[#50a2ff] hover:bg-[#50a2ff]/10'
-            }`}
-          >
-            <LayoutDashboard size={20} className={`transition-transform ${activeItem === 'home' ? 'scale-110' : 'group-hover:scale-110'}`} />
-            <span>Home</span>
-          </Link>
-          
-          {/* ALL GAMES */}
-          <Link 
-            href="/all-games" 
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group ${
-              activeItem === 'all-games'
-                ? 'bg-[#C471F2]/10 border border-[#C471F2]/20 text-[#C471F2] font-semibold'
-                : 'text-gray-400 hover:text-[#C471F2] hover:bg-[#C471F2]/10'
-            }`}
-          >
-            <Gamepad2 size={20} className={`transition-colors ${activeItem === 'all-games' ? '' : 'group-hover:text-[#C471F2]'}`} />
-            <span>All Games</span>
-          </Link>
-          
-          {/* TOP SELLING */}
-          <Link 
-            href="/top-selling" 
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group ${
-              activeItem === 'top-selling'
-                ? 'bg-[#00FF62]/10 border border-[#00FF62]/20 text-[#00FF62] font-semibold'
-                : 'text-gray-400 hover:text-[#00FF62] hover:bg-[#00FF62]/10'
-            }`}
-          >
-            <TrendingUp size={20} className={`transition-colors ${activeItem === 'top-selling' ? '' : 'group-hover:text-[#00FF62]'}`} />
-            <span>Top-Selling</span>
-          </Link>
-          
-          {/* MOST PLAYED */}
-          <Link 
-            href="/most-played" 
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group ${
-              activeItem === 'most-played'
-                ? 'bg-[#efb537]/10 border border-[#efb537]/20 text-[#efb537] font-semibold'
-                : 'text-gray-400 hover:text-[#efb537] hover:bg-[#efb537]/10'
-            }`}
-          >
-            <Trophy size={20} className={`transition-colors ${activeItem === 'most-played' ? '' : 'group-hover:text-[#efb537]'}`} />
-            <span>Most Played</span>
-          </Link>
-
-          <div className="my-4 h-px bg-white/5 mx-4"></div>
-          <p className="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tu Colección</p>
-
-          {/* Favoritos */}
-          <Link 
-            href="/favorites" 
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group ${
-                activeItem === 'favorites'
-                  ? 'bg-[#f6339a]/10 border border-[#f6339a]/20 text-[#f6339a] font-semibold'
-                  : 'text-gray-400 hover:text-[#f6339a] hover:bg-[#f6339a]/10'
-            }`}
-          >
-            <Heart size={20} className={`transition-colors ${activeItem === 'favorites' ? '' : 'group-hover:text-[#f6339a]'}`} />
-            <span>Favoritos</span>
-          </Link>
-          
-          {/* Perfil */}
-          <Link 
-            href="/profile" 
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group ${
-                activeItem === 'profile'
-                  ? 'bg-[#2DD4E0]/10 border border-[#2DD4E0]/20 text-[#2DD4E0] font-semibold'
-                  : 'text-gray-400 hover:text-[#2DD4E0] hover:bg-[#2DD4E0]/10'
-            }`}
-          >
-            <User size={20} className={`transition-colors ${activeItem === 'profile' ? '' : 'group-hover:text-[#2DD4E0]'}`} />
-            <span>Perfil</span>
-          </Link>
-        </nav>
-
-        {/* Sección Inferior: Sistema y Salida */}
-        <div className="space-y-2 mt-4 pt-4 border-t border-white/5">
-          <Link 
-            href="/settings" 
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group ${
-              activeItem === 'settings'
-                ? 'bg-white/10 text-white border border-white/10'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Settings size={20} className={`transition-colors ${activeItem === 'settings' ? 'text-white' : 'group-hover:text-gray-200'}`} />
-            <span>Settings</span>
-          </Link>
-          
+        /* Estilos Desktop: Reset a estático (Para usos futuros si fuera necesario) */
+        lg:static lg:h-full lg:translate-x-0 lg:bg-transparent lg:p-0 lg:border-none lg:w-full lg:z-auto lg:transition-none lg:shadow-none
+      `}>
+        
+        {/* CABECERA MÓVIL (BOTÓN CERRAR) - SIN TEXTO */}
+        <div className="flex items-center justify-end lg:hidden mb-0 px-1 shrink-0">
           <button 
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl font-medium transition-all group cursor-pointer"
+            onClick={() => onClose && onClose()} 
+            className="p-1 text-gray-400 hover:text-white active:scale-95 transition-transform cursor-pointer"
+            aria-label="Cerrar menú"
+            type="button"
           >
-            <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
-            <span>LogOut</span>
+            <X size={24} />
           </button>
         </div>
-      </div>
 
-      {/* 2. Banner PRO */}
-      <div className="mt-auto p-5 rounded-2xl bg-gradient-to-br from-pink-600 to-purple-700 text-white relative overflow-hidden shadow-2xl border border-white/10 flex flex-col shrink-0">
-        <div className="relative z-10 flex flex-col justify-center gap-3">
-          <div className="space-y-1">
-             <p className="font-bold text-lg leading-tight">GameLens Pro</p>
-             <p className="text-sm text-pink-100 opacity-90 font-medium leading-snug">Accede a métricas avanzadas y exporta reportes.</p>
-          </div>
-          <div className="pt-2">
-            <button className="w-full px-4 py-2 bg-white text-pink-600 rounded-lg text-sm font-bold shadow-lg hover:bg-gray-100 transition transform hover:scale-105 active:scale-95">
-              Mejorar Plan
+        {/* CONTENIDO DEL MENÚ */}
+        <div className="bg-neutral-900/50 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-xl flex-1 overflow-y-auto no-scrollbar">
+          
+          <nav className="space-y-2">
+            <p className="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Menu Principal</p>
+            
+            <Link 
+              href="/" 
+              className={getLinkClass('/', 'home')} 
+              onClick={handleLinkClick}
+            >
+              <LayoutDashboard size={20} className="transition-transform group-hover:scale-110" />
+              <span>Home</span>
+            </Link>
+            
+            <Link 
+              href="/all-games" 
+              className={getLinkClass('/all-games', 'all-games')}
+              onClick={handleLinkClick}
+            >
+              <Gamepad2 size={20} />
+              <span>All Games</span>
+            </Link>
+            
+            <Link 
+              href="/top-selling" 
+              className={getLinkClass('/top-selling', 'top-selling')}
+              onClick={handleLinkClick}
+            >
+              <TrendingUp size={20} />
+              <span>Top-Selling</span>
+            </Link>
+            
+            <Link 
+              href="/most-played" 
+              className={getLinkClass('/most-played', 'most-played')}
+              onClick={handleLinkClick}
+            >
+              <Trophy size={20} />
+              <span>Most Played</span>
+            </Link>
+
+            <div className="my-4 h-px bg-white/5 mx-4"></div>
+            <p className="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tu Colección</p>
+
+            <Link 
+              href="/favorites" 
+              className={getLinkClass('/favorites', 'favorites')}
+              onClick={handleLinkClick}
+            >
+              <Heart size={20} />
+              <span>Favoritos</span>
+            </Link>
+            
+            <Link 
+              href="/profile" 
+              className={getLinkClass('/profile', 'profile')}
+              onClick={handleLinkClick}
+            >
+              <User size={20} />
+              <span>Perfil</span>
+            </Link>
+          </nav>
+
+          {/* Sección Inferior */}
+          <div className="space-y-2 mt-4 pt-4 border-t border-white/5">
+            <Link 
+              href="/settings" 
+              className={getLinkClass('/settings', 'settings')}
+              onClick={handleLinkClick}
+            >
+              <Settings size={20} />
+              <span>Settings</span>
+            </Link>
+            
+            <button 
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl font-medium transition-all group cursor-pointer"
+            >
+              <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
+              <span>LogOut</span>
             </button>
           </div>
         </div>
-        {/* Decoración de fondo */}
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/40 rounded-full blur-xl"></div>
-      </div>
 
-    </div>
+        {/* BANNER PRO (Oculto en móvil con hidden lg:flex) */}
+        <div className="hidden lg:flex mt-auto p-5 rounded-2xl bg-gradient-to-br from-pink-600 to-purple-700 text-white relative overflow-hidden shadow-2xl border border-white/10 flex-col shrink-0">
+          <div className="relative z-10 flex flex-col justify-center gap-3">
+            <div className="space-y-1">
+                <p className="font-bold text-lg leading-tight">GameLens Pro</p>
+                <p className="text-sm text-pink-100 opacity-90 font-medium leading-snug">Accede a métricas avanzadas y exporta reportes.</p>
+            </div>
+            <div className="pt-2">
+              <button className="w-full px-4 py-2 bg-white text-pink-600 rounded-lg text-sm font-bold shadow-lg hover:bg-gray-100 transition transform hover:scale-105 active:scale-95">
+                Mejorar Plan
+              </button>
+            </div>
+          </div>
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/40 rounded-full blur-xl"></div>
+        </div>
+      </div>
+    </>
   );
 };

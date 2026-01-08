@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link'; 
+import Link from 'next/link';
 import Image from 'next/image';
 import { 
   Heart, Search, User, Settings, Clock, Trophy, Gamepad2, MapPin, Calendar, Edit2, Medal, Users, Activity, Zap, Crown, Swords, X, Star, Shield, Target, Flame, MessageCircle, MoreHorizontal, Camera, ChevronLeft, Check
@@ -31,7 +31,7 @@ const formatNumber = (num: number) => {
   return num.toString();
 };
 
-// --- DATOS MOCK: LISTA COMPLETA DE LOGROS ---
+// --- DATOS MOCK ---
 const allAchievements = [
   { id: 1, title: "Elden Lord", game: "Elden Ring", description: "Obtén todos los demás trofeos.", icon: Crown, color: PALETTE.AMARILLO, date: "2 horas atrás", rarity: "Legendario (0.4%)" },
   { id: 2, title: "Legend of Night City", game: "Cyberpunk 2077", description: "Completa la historia principal.", icon: Zap, color: PALETTE.VERDE, date: "1 día atrás", rarity: "Épico (12%)" },
@@ -47,7 +47,6 @@ const allAchievements = [
   { id: 12, title: "Parkour Master", game: "Dying Light 2", description: "Completa todos los desafíos nocturnos.", icon: Activity, color: PALETTE.CEL_AZUL, date: "5 meses atrás", rarity: "Raro (10%)" },
 ];
 
-// --- DATOS MOCK: LISTA COMPLETA DE ACTIVIDAD ---
 const allActivity = [
   { id: 1, name: "Elden Ring", slug: "elden-ring", action: "Jugando ahora", time: "En línea", cover: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/header.jpg", hours: "124h" },
   { id: 4, name: "Fortnite", slug: "fortnite", action: "Jugó hace", time: "2 horas", cover: "https://static-cdn.jtvnw.net/ttv-boxart/33214-600x900.jpg", hours: "850h" },
@@ -59,7 +58,6 @@ const allActivity = [
   { id: 55, name: "Apex Legends", slug: "apex", action: "Jugó hace", time: "2 meses", cover: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1172470/header.jpg", hours: "1200h" },
 ];
 
-// --- DATOS MOCK: LISTA COMPLETA DE FAVORITOS ---
 const allFavorites = [
   { id: 2, name: "Cyberpunk 2077", slug: "cyberpunk-2077", cover: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/library_600x900.jpg" },
   { id: 13, name: "The Witcher 3", slug: "the-witcher-3", cover: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/library_600x900.jpg" },
@@ -75,7 +73,6 @@ const allFavorites = [
   { id: 11, name: "Sekiro: Shadows Die Twice", slug: "sekiro", cover: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/814380/library_600x900.jpg" },
 ];
 
-// --- DATOS MOCK: LISTA COMPLETA DE AMIGOS ---
 const allFriends = [
   { id: 1, name: "AnaGamer", status: "Jugando Valorant", isOnline: true, level: 45 },
   { id: 2, name: "DarkSoul_99", status: "En línea", isOnline: true, level: 32 },
@@ -102,7 +99,6 @@ const BANNER_OPTIONS = [
 ];
 
 // --- OPCIONES DE AVATARES PERSONALIZADOS (SVG DATA URIs) ---
-// Estos SVGs están codificados en Base64 para cargarse instantáneamente
 const AVATAR_OPTIONS = [
   { 
     id: 'a1', 
@@ -148,7 +144,7 @@ const initialUserProfile = {
   coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/library_hero.jpg",
   location: "Argentina",
   joinDate: "Nov 2023",
-  favoritePlatform: "PC", // Agregado para compatibilidad con el Header
+  favoritePlatform: "PC",
   level: 42,
   stats: {
     gamesOwned: 148,
@@ -165,24 +161,20 @@ const initialUserProfile = {
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
    
-  // Estado principal del perfil (ahora editable)
   const [userProfile, setUserProfile] = useState(initialUserProfile);
 
   const [hoveredAchievement, setHoveredAchievement] = useState<number | null>(null);
   const [hoveredActivity, setHoveredActivity] = useState<number | null>(null);
    
-  // ESTADO PARA LOS OVERLAYS (MODALES)
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
 
-  // Estados para el formulario de edición
   const [editForm, setEditForm] = useState(initialUserProfile);
   const [selectingMedia, setSelectingMedia] = useState<'cover' | 'avatar' | null>(null);
 
-  // Estado para la búsqueda de amigos dentro del modal
   const [friendSearch, setFriendSearch] = useState("");
 
   useEffect(() => {
@@ -192,7 +184,6 @@ export default function ProfilePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Bloquear scroll cuando cualquier modal está abierto
   useEffect(() => {
     if (showAchievementsModal || showActivityModal || showFavoritesModal || showFriendsModal || showEditProfileModal) {
       document.body.style.overflow = 'hidden';
@@ -218,10 +209,9 @@ export default function ProfilePage() {
       } else if (selectingMedia === 'avatar') {
           setEditForm({ ...editForm, avatarUrl: url });
       }
-      setSelectingMedia(null); // Volver al formulario principal
+      setSelectingMedia(null);
   };
 
-  // Filtrar amigos en el modal
   const filteredFriends = allFriends.filter(friend => 
     friend.name.toLowerCase().includes(friendSearch.toLowerCase())
   );
@@ -235,7 +225,6 @@ export default function ProfilePage() {
       className="min-h-screen flex flex-col bg-[#131119]"
       style={{ colorScheme: 'dark' }}
     >
-      {/* --- ESTILOS INLINE PARA ANIMACIONES --- */}
       <style jsx global>{`
         @keyframes modalPop {
           0% { opacity: 0; transform: scale(0.95) translateY(10px); }
@@ -253,7 +242,6 @@ export default function ProfilePage() {
         }
       `}</style>
 
-      {/* --- OVERLAY DE EDITAR PERFIL --- */}
       {showEditProfileModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
           <div 
@@ -288,9 +276,7 @@ export default function ProfilePage() {
             {/* Body Scrollable Editar */}
             <div className="flex-1 overflow-y-auto p-6 bg-[#131119] no-scrollbar">
                
-               {/* LÓGICA CONDICIONAL: SELECCIÓN vs FORMULARIO */}
                {selectingMedia === 'cover' ? (
-                   // --- SELECCION DE PORTADA ---
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                        {BANNER_OPTIONS.map((banner) => (
                            <div 
@@ -304,7 +290,7 @@ export default function ProfilePage() {
                                </div>
                                {editForm.coverUrl === banner.url && (
                                    <div className="absolute top-2 right-2 bg-green-500 rounded-full p-1 shadow-lg">
-                                        <Check size={14} className="text-black" />
+                                            <Check size={14} className="text-black" />
                                    </div>
                                )}
                            </div>
@@ -312,7 +298,6 @@ export default function ProfilePage() {
                    </div>
 
                ) : selectingMedia === 'avatar' ? (
-                   // --- SELECCION DE AVATAR ---
                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-6">
                        {AVATAR_OPTIONS.map((avatar) => (
                            <div 
@@ -342,7 +327,7 @@ export default function ProfilePage() {
                    </div>
 
                ) : (
-                   // --- FORMULARIO PRINCIPAL ---
+                   // FORMULARIO PRINCIPAL
                    <>
                         {/* 1. Imagen de Portada (Preview Editable) */}
                        <div 
@@ -364,7 +349,7 @@ export default function ProfilePage() {
                           </div>
                        </div>
 
-                       {/* 2. Avatar (Preview Editable) - Superpuesto */}
+                       {/* 2. Avatar (Preview Editable) */}
                        <div className="relative -mt-12 ml-4 w-24 h-24 rounded-full p-1 bg-[#131119]">
                           <div 
                             className="w-full h-full rounded-full overflow-hidden relative group cursor-pointer border border-white/10"
@@ -471,7 +456,6 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* --- OVERLAY DE TODOS LOS LOGROS --- */}
       {showAchievementsModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
           <div 
@@ -503,7 +487,7 @@ export default function ProfilePage() {
                     key={ach.id}
                     className="group flex gap-4 p-4 rounded-2xl bg-[#1A1A20] border border-white/5 hover:border-white/10 hover:bg-[#202028] transition-all duration-300 overflow-hidden relative"
                   >
-                     
+                      
                     <div 
                       className="w-16 h-16 shrink-0 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-105"
                       style={{ 
@@ -542,7 +526,6 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* --- OVERLAY DE ACTIVIDAD RECIENTE --- */}
       {showActivityModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
           <div 
@@ -551,7 +534,6 @@ export default function ProfilePage() {
           />
           <div className="relative w-full max-w-3xl max-h-[85vh] bg-[#131119] rounded-3xl border border-white/10 shadow-2xl flex flex-col overflow-hidden animate-modal-pop">
             
-            {/* Header Modal Actividad */}
             <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between bg-[#1A1A20]">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500">
@@ -570,7 +552,6 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {/* Body Scrollable Actividad */}
             <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-[#131119] no-scrollbar">
               <div className="space-y-3">
                 {allActivity.map((game) => (
@@ -607,7 +588,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Footer Modal Actividad */}
             <div className="px-6 py-4 bg-[#1A1A20] border-t border-white/5 flex justify-end">
               <button 
                 onClick={() => setShowActivityModal(false)}
@@ -620,7 +600,6 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* --- OVERLAY DE FAVORITOS --- */}
       {showFavoritesModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
           <div 
@@ -679,7 +658,6 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* --- OVERLAY DE AMIGOS --- */}
       {showFriendsModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
           <div 
@@ -688,7 +666,6 @@ export default function ProfilePage() {
           />
           <div className="relative w-full max-w-3xl max-h-[85vh] bg-[#131119] rounded-3xl border border-white/10 shadow-2xl flex flex-col overflow-hidden animate-modal-pop">
             
-            {/* Header Modal Amigos */}
             <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between bg-[#1A1A20]">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-green-500/10 text-green-500">
@@ -707,7 +684,6 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {/* Barra de Búsqueda Amigos */}
             <div className="px-6 py-4 bg-[#131119] sticky top-0 z-10 border-b border-white/5">
               <div className="relative group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-green-500 transition-colors" size={16} />
@@ -721,7 +697,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Body Scrollable Amigos */}
             <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-[#131119] no-scrollbar">
               <div className="grid grid-cols-1 gap-3">
                 {filteredFriends.length > 0 ? (
@@ -765,7 +740,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Footer Modal Amigos */}
             <div className="px-6 py-4 bg-[#1A1A20] border-t border-white/5 flex justify-end">
               <button 
                 onClick={() => setShowFriendsModal(false)}
@@ -778,27 +752,21 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* 1. Header (Sticky) Reemplazado por Componente */}
       <Header user={userProfile} />
       
-      {/* 2. Main Wrapper */}
       <main className="flex-1 px-6 md:px-10 max-w-[1920px] mx-auto w-full relative flex flex-col">
         
         <div className="flex flex-col md:flex-row gap-8 flex-1 items-stretch">
           
-          {/* Menú Lateral */}
           <aside className="hidden md:block w-[260px] shrink-0 relative">
              <div className="sticky top-[74px] pt-10 pb-10 h-[calc(100vh-74px)] overflow-y-auto no-scrollbar">
-                <VerticalMenu activeItem="profile" />
+               <VerticalMenu activeItem="profile" />
              </div>
           </aside>
 
-          {/* Área Derecha: Contenido del Perfil */}
           <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10">
             
-            {/* --- HERO PROFILE CARD + STATS INTEGRADOS --- */}
             <div className="relative w-full rounded-3xl overflow-hidden border border-white/5 shadow-2xl bg-[#1A1A20] group">
-                {/* Cover Image */}
                 <div className="h-48 md:h-64 w-full relative">
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A20] via-[#1A1A20]/40 to-transparent z-10" />
                     <Image 
@@ -810,9 +778,8 @@ export default function ProfilePage() {
                     />
                 </div>
 
-                {/* Info del Usuario */}
-                <div className="relative z-20 px-8 -mt-20 flex flex-col md:flex-row items-end md:items-end gap-6 mb-8">
-                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-full p-1 bg-gradient-to-tr from-blue-500 to-purple-500 shadow-xl shrink-0">
+                <div className="relative z-20 px-6 md:px-8 -mt-16 md:-mt-20 flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 mb-8">
+                    <div className="w-28 h-28 md:w-40 md:h-40 rounded-full p-1 bg-gradient-to-tr from-blue-500 to-purple-500 shadow-xl shrink-0">
                         <div className="w-full h-full rounded-full bg-neutral-900 flex items-center justify-center overflow-hidden relative">
                             {userProfile.avatarUrl ? (
                                 <Image src={userProfile.avatarUrl} alt={userProfile.name} fill className="object-cover" />
@@ -822,8 +789,8 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    <div className="flex-1 mb-2">
-                        <div className="flex items-center gap-3">
+                    <div className="flex-1 mb-2 text-center md:text-left w-full">
+                        <div className="flex items-center justify-center md:justify-start gap-3">
                             <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">{userProfile.name}</h2>
                             <span 
                                 className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-opacity-20 border bg-[#00FF62]/20 text-[#00FF62] border-[#00FF62]/30"
@@ -834,7 +801,7 @@ export default function ProfilePage() {
                         <p className="text-gray-400 font-medium text-sm mt-1">{userProfile.tag}</p>
                         <p className="text-gray-300 mt-3 max-w-2xl text-sm leading-relaxed">{userProfile.bio}</p>
                         
-                        <div className="flex flex-wrap gap-4 mt-4 text-xs font-bold text-gray-500 uppercase tracking-wide">
+                        <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4 text-xs font-bold text-gray-500 uppercase tracking-wide">
                             <div className="flex items-center gap-1.5">
                                 <MapPin size={14} className="text-gray-400" /> {userProfile.location}
                             </div>
@@ -844,7 +811,7 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    <div className="mb-2 hidden md:block">
+                    <div className="mb-2 w-full md:w-auto flex justify-center md:block">
                         <button 
                           onClick={handleOpenEditModal}
                           className="flex items-center gap-2 px-5 py-2.5 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors shadow-lg"
@@ -854,7 +821,6 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 border-t border-white/5 bg-black/20 backdrop-blur-sm">
                     {[
                         { label: "Juegos", value: userProfile.stats.gamesOwned, icon: Gamepad2, color: PALETTE.VIOLETA },
@@ -864,23 +830,20 @@ export default function ProfilePage() {
                     ].map((stat, i) => (
                         <div 
                             key={i} 
-                            className="p-6 flex flex-col items-center justify-center gap-1 transition-colors hover:bg-white/5 md:border-r border-white/5 last:border-r-0 border-b md:border-b-0"
+                            className="p-4 md:p-6 flex flex-col items-center justify-center gap-1 transition-colors hover:bg-white/5 md:border-r border-white/5 last:border-r-0 border-b md:border-b-0"
                         >
-                            <stat.icon size={20} className="mb-1 opacity-80" style={{ color: stat.color }} />
-                            <span className="text-2xl font-black text-white">{stat.value}</span>
-                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{stat.label}</span>
+                            <stat.icon size={18} className="mb-1 opacity-80 md:w-5 md:h-5" style={{ color: stat.color }} />
+                            <span className="text-xl md:text-2xl font-black text-white">{stat.value}</span>
+                            <span className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider">{stat.label}</span>
                         </div>
                     ))}
                 </div>
             </div>
 
-            {/* --- CONTENIDO DIVIDIDO: ACTIVIDAD Y FAVORITOS --- */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-stretch flex-1">
                 
-                {/* --- COLUMNA IZQUIERDA (Principal) --- */}
                 <div className="xl:col-span-2 space-y-8 flex flex-col h-full">
                     
-                    {/* Actividad Reciente */}
                     <div className="space-y-4">
                         <div className="flex items-center justify-between px-1">
                             <h3 className="text-xl font-bold text-white flex items-center gap-2">
@@ -941,7 +904,6 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    {/* Insignia Especial */}
                     <div 
                         className="p-5 rounded-2xl border flex items-center gap-4 relative overflow-hidden shrink-0"
                         style={{ 
@@ -974,7 +936,6 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    {/* Favoritos */}
                     <div className="space-y-4 flex flex-col flex-1">
                         <div className="flex items-center justify-between px-1">
                             <h3 className="text-xl font-bold text-white flex items-center gap-2">
@@ -1012,10 +973,8 @@ export default function ProfilePage() {
 
                 </div>
 
-                {/* --- COLUMNA DERECHA (Lateral) --- */}
                 <div className="space-y-8 flex flex-col h-full">
                     
-                    {/* Logros Recientes */}
                     <div className="space-y-4">
                         <div className="flex items-center justify-between px-1">
                             <h3 className="text-xl font-bold text-white flex items-center gap-2">
@@ -1053,7 +1012,6 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    {/* Amigos */}
                     <div className="space-y-4 flex flex-col flex-1">
                         <h3 className="text-xl font-bold text-white flex items-center gap-2 px-1">
                             <Users size={20} style={{ color: PALETTE.VERDE }} /> Amigos
