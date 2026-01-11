@@ -228,7 +228,7 @@ export default function TopSellingPage() {
       className="min-h-screen flex flex-col bg-[#131119]"
       style={{ colorScheme: 'dark' }}
     >
-      {/* 1. ESTILO DE SCROLLBAR (Consistente con Most Played) */}
+      {/* 1. ESTILO DE SCROLLBAR Y ANIMACIONES */}
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;
@@ -236,6 +236,49 @@ export default function TopSellingPage() {
         .no-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
+        }
+
+        /* --- ANIMACIONES DE CARGA (Fade In Up) --- */
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-up {
+          animation: fadeInUp 0.6s ease-out forwards;
+          opacity: 0; /* Comienza oculto para evitar flash */
+        }
+        
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
+        .delay-600 { animation-delay: 600ms; }
+
+        /* ANIMACIÓN DE TARJETAS (Zoom central limpio) */
+        .game-card-hover, 
+        [class*="GameCard"],
+        section div[role="listitem"] {
+          transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+          transform-origin: center center !important;
+          will-change: transform;
+        }
+        
+        .game-card-hover:hover, 
+        [class*="GameCard"]:hover,
+        section div[role="listitem"]:hover {
+          transform: scale(1.04) !important; 
+          translate: 0px 0px !important;
+          z-index: 50 !important;
+          filter: brightness(1.1);
+          box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5);
         }
       `}</style>
       
@@ -256,7 +299,8 @@ export default function TopSellingPage() {
           </aside>
 
           {/* Área Derecha: Contenido Específico de Top Selling */}
-          <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10">
+          {/* Se añade animate-fade-up para la animación de entrada */}
+          <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10 animate-fade-up">
             
             {/* Page Header (Consistente con Most Played, color VERDE) */}
             <div className="mb-2">
@@ -285,7 +329,8 @@ export default function TopSellingPage() {
                         <Link 
                             key={game.id} 
                             href={`/game/${game.slug}`}
-                            className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-white/5 transition-colors group"
+                            // Añadimos la clase 'game-card-hover' para la animación de hover
+                            className="game-card-hover grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-white/5 transition-colors group"
                         >
                             {/* RANK */}
                             <div className="col-span-2 md:col-span-1 flex justify-start">

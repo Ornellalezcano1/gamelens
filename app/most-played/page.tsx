@@ -204,6 +204,7 @@ export default function MostPlayedPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Simulamos carga de usuario
     const mockUser = { name: 'Valentín', favoritePlatform: 'PC', avatarUrl: '' };
     const timer = setTimeout(() => {
           setUser(mockUser);
@@ -216,6 +217,7 @@ export default function MostPlayedPage() {
     return <div className="h-screen bg-[#131119] flex items-center justify-center text-white">Cargando...</div>;
   }
 
+  // Objeto de usuario seguro para pasar al Header
   const safeUser = user || { name: 'Guest', favoritePlatform: 'PC', avatarUrl: '' };
 
   return (
@@ -223,7 +225,7 @@ export default function MostPlayedPage() {
       className="min-h-screen flex flex-col bg-[#131119]"
       style={{ colorScheme: 'dark' }}
     >
-      {/* 1. ESTILO DE SCROLLBAR (Para consistencia) */}
+      {/* 1. ESTILO DE SCROLLBAR Y ANIMACIONES */}
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;
@@ -232,12 +234,55 @@ export default function MostPlayedPage() {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
+
+        /* --- ANIMACIONES DE CARGA (Fade In Up) --- */
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-up {
+          animation: fadeInUp 0.6s ease-out forwards;
+          opacity: 0; /* Comienza oculto para evitar flash */
+        }
+        
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
+        .delay-600 { animation-delay: 600ms; }
+
+        /* ANIMACIÓN DE TARJETAS (Zoom central limpio) */
+        .game-card-hover, 
+        [class*="GameCard"],
+        section div[role="listitem"] {
+          transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+          transform-origin: center center !important;
+          will-change: transform;
+        }
+        
+        .game-card-hover:hover, 
+        [class*="GameCard"]:hover,
+        section div[role="listitem"]:hover {
+          transform: scale(1.04) !important; 
+          translate: 0px 0px !important;
+          z-index: 50 !important;
+          filter: brightness(1.1);
+          box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+        }
       `}</style>
       
       {/* 2. HEADER INTEGRADO (Reutilizable) */}
       <Header user={safeUser} />
       
-      {/* 3. MAIN WRAPPER (Estructura de ProfilePage) */}
+      {/* 3. MAIN WRAPPER (Estructura de ProfilePage / MostPlayedPage) */}
       <main className="flex-1 px-6 md:px-10 max-w-[1920px] mx-auto w-full relative flex flex-col">
         
         <div className="flex flex-col md:flex-row gap-8 flex-1 items-stretch">
@@ -245,12 +290,14 @@ export default function MostPlayedPage() {
           {/* Menú Lateral (Sticky) */}
           <aside className="hidden md:block w-[260px] shrink-0 relative">
              <div className="sticky top-[74px] pt-10 pb-10 h-[calc(100vh-74px)] overflow-y-auto no-scrollbar">
+                {/* Active Item: 'most-played' */}
                 <VerticalMenu activeItem="most-played" /> 
              </div>
           </aside>
 
           {/* Área Derecha: Contenido Específico de Most Played */}
-          <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10">
+          {/* Se añade animate-fade-up para la animación de entrada */}
+          <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10 animate-fade-up">
             
             {/* Page Header (Sin subtítulo y con icono Amarillo) */}
             <div className="mb-2">
@@ -278,7 +325,8 @@ export default function MostPlayedPage() {
                         <Link 
                             key={game.id} 
                             href={`/game/${game.slug}`}
-                            className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-white/5 transition-colors group"
+                            // Añadimos la clase 'game-card-hover' para la animación de hover
+                            className="game-card-hover grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-white/5 transition-colors group"
                         >
                             {/* RANK */}
                             <div className="col-span-2 md:col-span-1 flex justify-start">

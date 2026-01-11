@@ -57,6 +57,26 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen w-full bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
       
+      {/* Estilos Globales para Animaciones */}
+      <style jsx global>{`
+        /* --- ANIMACIONES DE CARGA (Fade In Up) --- */
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-up {
+          animation: fadeInUp 0.6s ease-out forwards;
+          opacity: 0; /* Comienza oculto para evitar flash */
+        }
+      `}</style>
+
       {/* Fondo Mesh Gradient (Mismo estilo que Login) */}
       <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-purple-600/30 rounded-full blur-[120px] mix-blend-screen animate-pulse" style={{ animationDuration: '4s' }} />
@@ -65,7 +85,8 @@ export default function RegisterPage() {
         <div className="absolute bottom-[-10%] left-[20%] w-[45vw] h-[45vw] bg-pink-600/20 rounded-full blur-[130px] mix-blend-screen animate-pulse" style={{ animationDuration: '7s' }} />
       </div>
       
-      <div className="w-full max-w-md bg-neutral-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-8 relative z-10 flex flex-col gap-6">
+      {/* Se añade animate-fade-up para la animación de entrada */}
+      <div className="w-full max-w-md bg-neutral-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-8 relative z-10 flex flex-col gap-6 animate-fade-up">
         
         {/* Encabezado con LOGO animado */}
         <div className="flex flex-col items-center justify-center space-y-4 mb-2">
@@ -182,11 +203,12 @@ export default function RegisterPage() {
             <button className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/5 text-gray-300 hover:text-white py-2.5 rounded-xl transition-all text-sm font-medium hover:border-white/20 hover:bg-[#5865F2]/20 hover:text-[#5865F2] group">
                 <svg className="w-4 h-4 group-hover:fill-current" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.5328-9.748-1.3751-13.6888a.061.061 0 00-.0303-.0277zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419z"/>
-                </svg>
-                Discord
-            </button>
-        </div>
+            </svg>
+            Discord
+        </button>
+    </div>
 
+        {/* Enlace al Registro */}
         <p className="text-center text-sm text-gray-500">
           ¿Ya tienes cuenta?{' '}
           <Link href="/login" className="text-purple-400 font-semibold hover:text-purple-300 transition-colors">

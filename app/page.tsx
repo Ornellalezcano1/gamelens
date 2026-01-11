@@ -99,7 +99,7 @@ export default async function HomePage() {
     // 'h-screen' y 'overflow-hidden' para bloquear el scroll de la página completa
     <div className="h-screen bg-[#131119] text-white selection:bg-pink-500/30 overflow-hidden flex flex-col">
       
-      {/* Estilos Globales */}
+      {/* Estilos Globales con Animaciones Agregadas */}
       <style dangerouslySetInnerHTML={{__html: `
         .no-scrollbar::-webkit-scrollbar {
           display: none;
@@ -108,6 +108,30 @@ export default async function HomePage() {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
+
+        /* --- ANIMACIONES DE CARGA (Fade In Up) --- */
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-up {
+          animation: fadeInUp 0.6s ease-out forwards;
+          opacity: 0; /* Comienza oculto para evitar flash */
+        }
+        
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
+        .delay-600 { animation-delay: 600ms; }
 
         /* ANIMACIÓN DE TARJETAS (Zoom central limpio) */
         .game-card-hover, 
@@ -138,7 +162,8 @@ export default async function HomePage() {
         <div className="flex flex-col md:flex-row gap-8 flex-1 items-stretch h-full">
           
           {/* Área del Dashboard: Ocupa todo el alto disponible */}
-          <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-4 h-full">
+          {/* Se añade 'animate-fade-up' para la animación de entrada */}
+          <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-4 h-full animate-fade-up">
             <Dashboard data={data} />
           </div>
 

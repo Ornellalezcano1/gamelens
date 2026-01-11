@@ -167,6 +167,49 @@ export default function FavoritesPage() {
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* --- ANIMACIONES DE CARGA (Fade In Up) --- */
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-up {
+          animation: fadeInUp 0.6s ease-out forwards;
+          opacity: 0; /* Comienza oculto para evitar flash */
+        }
+        
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
+        .delay-600 { animation-delay: 600ms; }
+
+        /* ANIMACIÓN DE TARJETAS (Zoom central limpio) */
+        .game-card-hover, 
+        [class*="GameCard"],
+        section div[role="listitem"] {
+          transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+          transform-origin: center center !important;
+          will-change: transform;
+        }
+        
+        .game-card-hover:hover, 
+        [class*="GameCard"]:hover,
+        section div[role="listitem"]:hover {
+          transform: scale(1.04) !important; 
+          translate: 0px 0px !important;
+          z-index: 50 !important;
+          filter: brightness(1.1);
+          box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+        }
       `}</style>
 
       {/* 2. HEADER */}
@@ -180,12 +223,13 @@ export default function FavoritesPage() {
           {/* Menú Lateral */}
           <aside className="hidden md:block w-[260px] shrink-0 relative">
              <div className="sticky top-[74px] pt-10 pb-10 h-[calc(100vh-74px)] overflow-y-auto no-scrollbar">
-               <VerticalMenu activeItem="favorites" />
+                <VerticalMenu activeItem="favorites" />
              </div>
           </aside>
 
           {/* Área Derecha */}
-          <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10">
+          {/* Se añade animate-fade-up para la animación de entrada */}
+          <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10 animate-fade-up">
             
             {/* Header Sticky con Filtros (Exactamente igual a All Games) */}
             <div className="sticky top-[73px] z-40 bg-[#131119] pt-2 pb-6 -mt-2 border-b border-white/5 md:border-none">
@@ -260,7 +304,8 @@ export default function FavoritesPage() {
                         <Link 
                             href={`/game/${game.slug}`} 
                             key={game.id}
-                            className="group relative bg-[#1A1A20] rounded-2xl p-3 border border-white/5 hover:border-pink-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-pink-500/10 block no-underline"
+                            // Añadimos la clase 'game-card-hover' para la animación de hover
+                            className="game-card-hover group relative bg-[#1A1A20] rounded-2xl p-3 border border-white/5 hover:border-pink-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-pink-500/10 block no-underline"
                         >
                             {/* Imagen: aspect-[5/6] como en All Games */}
                             <div className="relative w-full aspect-[5/6] rounded-xl overflow-hidden mb-3 bg-gray-800">

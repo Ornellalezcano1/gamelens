@@ -87,36 +87,26 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
 
   return (
     <>
-      {/* 1. OVERLAY OSCURO (Fondo)
-          - z-[9998]: Muy alto para tapar todo el contenido.
-          - pointer-events: Controla si bloquea o no los clics.
-          - fixed inset-0: Cubre toda la pantalla y no se mueve con scroll.
-      */}
+      {/* 1. OVERLAY OSCURO (Fondo) */}
       <div 
         className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] lg:hidden transition-opacity duration-300 ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
-        // Prevenir scroll en el body cuando el overlay está activo (opcional, pero buena práctica)
-        // style={{ touchAction: 'none' }} 
       />
 
-      {/* 2. CAJÓN DEL MENÚ
-          - z-[9999]: El elemento más alto de la página.
-          - fixed inset-y-0 left-0: Fijo a la altura total del viewport, pegado a la izquierda.
-            Esto asegura que "por más que scrollees no cambie".
-      */}
+      {/* 2. CAJÓN DEL MENÚ */}
       <div className={`
         flex flex-col gap-4 lg:gap-6
         /* Estilos Móvil: Drawer Fixed + Inset-y-0 para altura completa fija */
         fixed inset-y-0 left-0 z-[9999] w-72 bg-[#131119] p-4 border-r border-white/10 transition-transform duration-300 ease-in-out shadow-2xl
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         
-        /* Estilos Desktop: Reset a estático (Para usos futuros si fuera necesario) */
+        /* Estilos Desktop: Reset a estático */
         lg:static lg:h-full lg:translate-x-0 lg:bg-transparent lg:p-0 lg:border-none lg:w-full lg:z-auto lg:transition-none lg:shadow-none
       `}>
         
-        {/* CABECERA MÓVIL (BOTÓN CERRAR) - SIN TEXTO */}
+        {/* CABECERA MÓVIL (BOTÓN CERRAR) */}
         <div className="flex items-center justify-end lg:hidden mb-0 px-1 shrink-0">
           <button 
             onClick={() => onClose && onClose()} 
@@ -129,7 +119,8 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
         </div>
 
         {/* CONTENIDO DEL MENÚ */}
-        <div className="bg-neutral-900/50 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-xl flex-1 overflow-y-auto no-scrollbar">
+        {/* Se añade animate-fade-up para que aparezca suavemente */}
+        <div className="bg-neutral-900/50 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-xl flex-1 overflow-y-auto no-scrollbar animate-fade-up">
           
           <nav className="space-y-2">
             <p className="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Menu Principal</p>
@@ -213,8 +204,9 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
           </div>
         </div>
 
-        {/* BANNER PRO (Oculto en móvil con hidden lg:flex) */}
-        <div className="hidden lg:flex mt-auto p-5 rounded-2xl bg-gradient-to-br from-pink-600 to-purple-700 text-white relative overflow-hidden shadow-2xl border border-white/10 flex-col shrink-0">
+        {/* BANNER PRO */}
+        {/* Se añade animate-fade-up con delay-200 para efecto de cascada */}
+        <div className="hidden lg:flex mt-auto p-5 rounded-2xl bg-gradient-to-br from-pink-600 to-purple-700 text-white relative overflow-hidden shadow-2xl border border-white/10 flex-col shrink-0 animate-fade-up delay-200">
           <div className="relative z-10 flex flex-col justify-center gap-3">
             <div className="space-y-1">
                 <p className="font-bold text-lg leading-tight">GameLens Pro</p>

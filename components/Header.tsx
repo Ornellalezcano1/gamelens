@@ -28,7 +28,8 @@ export function Header({ user }: HeaderProps) {
         />
       </div>
 
-      <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-4 md:px-10 border-b border-white/5 bg-[#131119]/80 backdrop-blur-xl shrink-0">
+      {/* Se añade animate-fade-up para la animación de entrada */}
+      <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-4 md:px-10 border-b border-white/5 bg-[#131119]/80 backdrop-blur-xl shrink-0 animate-fade-up">
         
         {/* GRUPO IZQUIERDO */}
         <div className="flex items-center gap-4 md:gap-8">

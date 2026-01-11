@@ -321,6 +321,49 @@ export default function AllGamesPage() {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
+
+        /* --- ANIMACIONES DE CARGA (Fade In Up) --- */
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-up {
+          animation: fadeInUp 0.6s ease-out forwards;
+          opacity: 0; /* Comienza oculto para evitar flash */
+        }
+        
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
+        .delay-600 { animation-delay: 600ms; }
+
+        /* ANIMACIÓN DE TARJETAS (Zoom central limpio) */
+        .game-card-hover, 
+        [class*="GameCard"],
+        section div[role="listitem"] {
+          transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+          transform-origin: center center !important;
+          will-change: transform;
+        }
+        
+        .game-card-hover:hover, 
+        [class*="GameCard"]:hover,
+        section div[role="listitem"]:hover {
+          transform: scale(1.04) !important; 
+          translate: 0px 0px !important;
+          z-index: 50 !important;
+          filter: brightness(1.1);
+          box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+        }
       `}</style>
       
       {/* ➡️ Header Importado (USANDO safeUser para evitar error de tipos y variable no usada) */}
@@ -336,7 +379,8 @@ export default function AllGamesPage() {
              </div>
           </aside>
 
-          <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10">
+          {/* Se añade animate-fade-up para la animación de entrada */}
+          <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10 animate-fade-up">
             
             <div className="sticky top-[73px] z-40 bg-[#131119] pt-2 pb-6 -mt-2 border-b border-white/5 md:border-none">
               <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 relative">
@@ -403,7 +447,8 @@ export default function AllGamesPage() {
                 <Link 
                   href={`/game/${game.slug}`} 
                   key={game.id}
-                  className="group relative bg-[#1A1A20] rounded-2xl p-3 border border-white/5 hover:border-purple-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-500/10 block"
+                  // Añadimos la clase 'game-card-hover' para la animación de hover
+                  className="game-card-hover group relative bg-[#1A1A20] rounded-2xl p-3 border border-white/5 hover:border-purple-500/30 block"
                 >
                   <div className="relative w-full aspect-[5/6] rounded-xl overflow-hidden mb-3 bg-gray-800">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 pointer-events-none" />

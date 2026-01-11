@@ -50,6 +50,26 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
       
+      {/* Estilos Globales para Animaciones */}
+      <style jsx global>{`
+        /* --- ANIMACIONES DE CARGA (Fade In Up) --- */
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-up {
+          animation: fadeInUp 0.6s ease-out forwards;
+          opacity: 0; /* Comienza oculto para evitar flash */
+        }
+      `}</style>
+
       {/* Fondo Mesh Gradient Estilo GameLens */}
       <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-purple-600/30 rounded-full blur-[120px] mix-blend-screen animate-pulse" style={{ animationDuration: '4s' }} />
@@ -58,7 +78,8 @@ export default function LoginPage() {
         <div className="absolute bottom-[-10%] left-[20%] w-[45vw] h-[45vw] bg-pink-600/20 rounded-full blur-[130px] mix-blend-screen animate-pulse" style={{ animationDuration: '7s' }} />
       </div>
       
-      <div className="w-full max-w-md bg-neutral-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-8 relative z-10 flex flex-col gap-6">
+      {/* Se añade animate-fade-up para la animación de entrada */}
+      <div className="w-full max-w-md bg-neutral-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-8 relative z-10 flex flex-col gap-6 animate-fade-up">
         
         {/* Logo con animación de rotación suave */}
         <div className="flex flex-col items-center justify-center space-y-4 mb-2">
