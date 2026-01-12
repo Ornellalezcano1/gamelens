@@ -4,9 +4,11 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
 
-// --- IMPORTACIONES DE TUS COMPONENTES (Rutas de referencia) ---
+// --- IMPORTACIONES DE TUS COMPONENTES ---
 import { Header } from '@/components/Header';
 import { VerticalMenu } from '@/components/VerticalMenu';
+// IMPORTAMOS EL CONTEXTO DE IDIOMA
+import { useLanguage } from '@/app/context/LanguageContext';
 
 // --- ICONOS ---
 import { 
@@ -28,7 +30,6 @@ import {
 // 1. TIPOS Y MOCKS INTEGRADOS
 // ==========================================
 
-// Definición de tipos para Recharts para eliminar 'any'
 interface ChartPayloadItem {
   name: string;
   value: number | string;
@@ -79,6 +80,8 @@ export interface ExtendedGameDetail {
     publisherUrl?: string;
     releaseDate: string;
     description?: string;
+    description_en?: string;
+    description_es?: string;
     ageRating?: string;
     gameModes?: string[];
     downloadSize?: string;
@@ -163,15 +166,15 @@ const generateRankHistory = (currentRank: number) => {
 // --- LISTA BASE DE JUEGOS ---
 const RAW_GAMES_LIST = [
     { id: 28, slug: "black-myth-wukong", name: "Black Myth: Wukong", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/library_600x900.jpg", score: 81, isFavorite: false, genres: ["Action RPG", "Souls-like"] },
-    { id: 1, slug: "elden-ring", name: "Elden Ring", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/library_600x900.jpg", score: 96, isFavorite: true, genres: ["RPG", "Acción", "Mundo Abierto"] },
-    { id: 2, slug: "cyberpunk-2077", name: "Cyberpunk 2077", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/library_600x900.jpg", score: 86, isFavorite: false, genres: ["RPG", "FPS", "Mundo Abierto"] },
-    { id: 3, slug: "destiny-2", name: "Destiny 2", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1085660/library_600x900.jpg", score: 83, isFavorite: false, genres: ["FPS", "Shooter", "Acción"] },
-    { id: 4, slug: "fortnite", name: "Fortnite", coverUrl: "https://static-cdn.jtvnw.net/ttv-boxart/33214-600x900.jpg", score: 81, isFavorite: true, genres: ["Shooter", "Acción", "Mundo Abierto"] },
-    { id: 5, slug: "league-of-legends", name: "League of Legends", coverUrl: "https://static-cdn.jtvnw.net/ttv-boxart/21779-600x900.jpg", score: 89, isFavorite: false, genres: ["Estrategia", "Acción"] },
-    { id: 6, slug: "hades-ii", name: "Hades II", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145350/library_600x900.jpg", score: 94, isFavorite: true, genres: ["Indie", "Acción", "RPG"] },
-    { id: 7, slug: "stardew-valley", name: "Stardew Valley", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/413150/library_600x900.jpg", score: 97, isFavorite: true, genres: ["Indie", "Estrategia", "RPG"] },
-    { id: 8, slug: "valorant", name: "Valorant", coverUrl: "https://static-cdn.jtvnw.net/ttv-boxart/516575-600x900.jpg", score: 85, isFavorite: false, genres: ["FPS", "Shooter", "Estrategia"] },
-    { id: 9, slug: "baldurs-gate-3", name: "Baldur's Gate 3", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/library_600x900.jpg", score: 98, isFavorite: true, genres: ["RPG", "Estrategia", "Mundo Abierto"] },
+    { id: 1, slug: "elden-ring", name: "Elden Ring", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/library_600x900.jpg", score: 96, isFavorite: true, genres: ["RPG", "Action", "Open World"] },
+    { id: 2, slug: "cyberpunk-2077", name: "Cyberpunk 2077", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/library_600x900.jpg", score: 86, isFavorite: false, genres: ["RPG", "FPS", "Open World"] },
+    { id: 3, slug: "destiny-2", name: "Destiny 2", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1085660/library_600x900.jpg", score: 83, isFavorite: false, genres: ["FPS", "Shooter", "Action"] },
+    { id: 4, slug: "fortnite", name: "Fortnite", coverUrl: "https://static-cdn.jtvnw.net/ttv-boxart/33214-600x900.jpg", score: 81, isFavorite: true, genres: ["Shooter", "Action", "Open World"] },
+    { id: 5, slug: "league-of-legends", name: "League of Legends", coverUrl: "https://static-cdn.jtvnw.net/ttv-boxart/21779-600x900.jpg", score: 89, isFavorite: false, genres: ["Strategy", "Action"] },
+    { id: 6, slug: "hades-ii", name: "Hades II", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145350/library_600x900.jpg", score: 94, isFavorite: true, genres: ["Indie", "Action", "RPG"] },
+    { id: 7, slug: "stardew-valley", name: "Stardew Valley", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/413150/library_600x900.jpg", score: 97, isFavorite: true, genres: ["Indie", "Strategy", "RPG"] },
+    { id: 8, slug: "valorant", name: "Valorant", coverUrl: "https://static-cdn.jtvnw.net/ttv-boxart/516575-600x900.jpg", score: 85, isFavorite: false, genres: ["FPS", "Shooter", "Strategy"] },
+    { id: 9, slug: "baldurs-gate-3", name: "Baldur's Gate 3", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1086940/library_600x900.jpg", score: 98, isFavorite: true, genres: ["RPG", "Strategy", "Open World"] },
     { id: 10, slug: "hollow-knight", name: "Hollow Knight", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/library_600x900.jpg", score: 95, isFavorite: false, genres: ["Indie", "Acción"] },
     { id: 11, slug: "civilization-vi", name: "Civilization VI", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/289070/library_600x900.jpg", score: 88, isFavorite: false, genres: ["Estrategia"] },
     { id: 12, slug: "apex-legends", name: "Apex Legends", coverUrl: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1172470/library_600x900.jpg", score: 84, isFavorite: false, genres: ["Shooter", "FPS", "Acción"] },
@@ -211,7 +214,8 @@ const ELDEN_RING_DETAILED: Partial<ExtendedGameDetail> = {
     developer: "FromSoftware",
     publisher: "Bandai Namco Entertainment",
     releaseDate: "2022-02-25",
-    description: "Levántate, Tiznado, y déjate guiar por la gracia para esgrimir el poder del Anillo de Elden y convertirte en un Señor de Elden en las Tierras Intermedias. Explora un vasto mundo lleno de emociones donde los campos abiertos y las inmensas mazmorras se conectan con fluidez, crea tu propio personaje con total libertad y sumérgete en un drama épico nacido de un mito.",
+    description_es: "Levántate, Tiznado, y déjate guiar por la gracia para esgrimir el poder del Anillo de Elden y convertirte en un Señor de Elden en las Tierras Intermedias. Explora un vasto mundo lleno de emociones donde los campos abiertos y las inmensas mazmorras se conectan con fluidez.",
+    description_en: "Rise, Tarnished, and be guided by grace to brandish the power of the Elden Ring and become an Elden Lord in the Lands Between. Explore a vast world full of excitement where open fields and huge dungeons connect seamlessly.",
     ageRating: "M (17+)",
     downloadSize: "60 GB",
     controllerSupport: true,
@@ -273,38 +277,22 @@ const ELDEN_RING_DETAILED: Partial<ExtendedGameDetail> = {
     negativePercent: 5,
     starsDistribution: { "5": 72, "4": 18, "3": 6, "2": 3, "1": 1 }
   },
-  peakHours: [
-    { "hour": "00:00", "players": 80000 },
-    { "hour": "02:00", "players": 72000 },
-    { "hour": "04:00", "players": 65000 },
-    { "hour": "06:00", "players": 60000 },
-    { "hour": "08:00", "players": 70000 },
-    { "hour": "10:00", "players": 90000 },
-    { "hour": "12:00", "players": 110000 },
-    { "hour": "14:00", "players": 130000 },
-    { "hour": "16:00", "players": 150000 },
-    { "hour": "18:00", "players": 170000 },
-    { "hour": "20:00", "players": 190000 },
-    { "hour": "22:00", "players": 175000 }
-  ]
+  peakHours: generateHourly(200000) // Simplificado
 };
 
 // --- BASE DE DATOS MAESTRA GENERADA ---
-// Iteramos sobre tu lista RAW y rellenamos los detalles.
-// Si es Elden Ring, usamos los datos precisos. Si no, generamos mocks basados en el score/id.
-
 const GAMES_DATA: ExtendedGameDetail[] = RAW_GAMES_LIST.map((baseGame) => {
     
     // CASO ESPECIAL: ELDEN RING
     if (baseGame.slug === 'elden-ring') {
         return {
-            ...baseGame, // id, slug, name, coverUrl, score, isFavorite
-            ...ELDEN_RING_DETAILED as ExtendedGameDetail // Datos detallados manuales
+            ...baseGame,
+            ...ELDEN_RING_DETAILED as ExtendedGameDetail
         };
     }
 
-    // CASO GENERAL: GENERAR DATOS MOCK PARA EL RESTO
-    const basePlayers = Math.floor(20000 + (baseGame.score * 1500)); // Jugadores base según score
+    // CASO GENERAL: MOCKS
+    const basePlayers = Math.floor(20000 + (baseGame.score * 1500));
     const peak = Math.floor(basePlayers * (1.5 + Math.random()));
     const scoreVal = baseGame.score;
 
@@ -312,12 +300,10 @@ const GAMES_DATA: ExtendedGameDetail[] = RAW_GAMES_LIST.map((baseGame) => {
         ...baseGame,
         storeUrl: "#",
         images: {
-            // Usamos la cover como Hero si no hay otro, o un placeholder oscuro
             hero: baseGame.coverUrl, 
             cover: baseGame.coverUrl,
             screenshots: [
-                baseGame.coverUrl, // Screenshot 1 = Cover
-                // Screenshots placeholders genéricos
+                baseGame.coverUrl,
                 "https://placehold.co/1920x1080/1a1a1a/FFF?text=Gameplay+1",
                 "https://placehold.co/1920x1080/2a2a2a/FFF?text=Gameplay+2",
                 "https://placehold.co/1920x1080/111/FFF?text=Cinematic"
@@ -325,11 +311,13 @@ const GAMES_DATA: ExtendedGameDetail[] = RAW_GAMES_LIST.map((baseGame) => {
         },
         meta: {
             genres: baseGame.genres,
-            platforms: ["PC", "PlayStation", "Xbox"], // Genérico
+            platforms: ["PC", "PlayStation", "Xbox"],
             developer: "Developer Studios",
             publisher: "Publisher Inc",
             releaseDate: "2023-01-01",
-            description: `Descubre el increíble mundo de ${baseGame.name}. Una experiencia única en el género de ${baseGame.genres[0]} que ha cautivado a millones de jugadores. Gráficos impresionantes y jugabilidad inmersiva te esperan.`,
+            // Mock description genérico
+            description_es: `Descubre el increíble mundo de ${baseGame.name}. Una experiencia única en su género que ha cautivado a millones de jugadores.`,
+            description_en: `Discover the incredible world of ${baseGame.name}. A unique experience in its genre that has captivated millions of players.`,
             ageRating: "T",
             downloadSize: "45 GB",
             controllerSupport: true,
@@ -341,7 +329,7 @@ const GAMES_DATA: ExtendedGameDetail[] = RAW_GAMES_LIST.map((baseGame) => {
             peakPlayers: peak,
             score: scoreVal,
             currentPlayers: basePlayers,
-            players24hChangePercent: parseFloat(((Math.random() * 10) - 3).toFixed(1)), // -3% a +7%
+            players24hChangePercent: parseFloat(((Math.random() * 10) - 3).toFixed(1)),
             topCountries: [
                 { country: "US", code: "US", weight: 30 },
                 { country: "DE", code: "DE", weight: 15 },
@@ -351,7 +339,7 @@ const GAMES_DATA: ExtendedGameDetail[] = RAW_GAMES_LIST.map((baseGame) => {
         },
         rankingMovement: {
             currentRank: Math.floor(Math.random() * 20) + 1,
-            change: Math.floor(Math.random() * 3) - 1, // -1, 0, 1
+            change: Math.floor(Math.random() * 3) - 1,
             history: generateRankHistory(Math.floor(Math.random() * 20) + 1)
         },
         userReviews: {
@@ -386,17 +374,16 @@ const PALETTE = {
     GRID_COLOR: '#333'
 };
 
-// Datos simulados para Requisitos del Sistema (genéricos, se podrían mover al mock individual si varían mucho)
 const SYSTEM_REQUIREMENTS = {
     min: { os: "Win 10", cpu: "Core i7-6700 / Ryzen 5 1600", ram: "12 GB", gpu: "GTX 1060 6GB / RX 580" },
     rec: { os: "Win 10/11", cpu: "Core i7-12700 / Ryzen 7 7800X3D", ram: "16 GB", gpu: "RTX 2060 Super / RX 5700 XT" }
 };
 
 const TRAFFIC_DATA: { source: string; value: number }[] = [
-  { source: 'Steam', value: 45 },
-  { source: 'Directo', value: 20 },
-  { source: 'Buscadores', value: 15 },
-  { source: 'Social', value: 20 },
+  { source: 'steam', value: 45 },
+  { source: 'direct', value: 20 },
+  { source: 'search', value: 15 },
+  { source: 'social', value: 20 },
 ];
 
 // --- COMPONENTES AUXILIARES ---
@@ -508,12 +495,11 @@ const CustomActiveDotRanking = (props: CustomDotProps) => {
     return <circle cx={cx} cy={cy} r={6} fill={PALETTE.AMARILLO} stroke="#fff" strokeWidth={2} />;
 };
 
-// --- COMPONENTE RANK MEDAL (Estilo Sólido y Dorado para el Detalle) ---
+// --- COMPONENTE RANK MEDAL ---
 const RankMedal = ({ rank }: { rank: number }) => {
     if (rank > 3) return <span className="font-bold text-gray-500 w-6 text-center text-sm">{rank}</span>;
 
     let styles = "";
-    // Estilos sólidos consistentes con el diseño de Top Selling para Oro/Plata/Bronce
     if (rank === 1) styles = "bg-[#DEC464] text-neutral-900 shadow-[0_0_10px_rgba(222,196,100,0.3)]"; 
     if (rank === 2) styles = "bg-[#C0C0C0] text-neutral-900 shadow-[0_0_10px_rgba(192,192,192,0.3)]"; 
     if (rank === 3) styles = "bg-[#CD9866] text-neutral-900 shadow-[0_0_10px_rgba(205,152,102,0.3)]"; 
@@ -543,7 +529,7 @@ export default function GameDetailPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [growthRange, setGrowthRange] = useState<'14d' | '30d' | '90d'>('14d');
   const [activityRange, setActivityRange] = useState<'24h' | '7d' | '30d'>('24h');
-  const [platformFilter, setPlatformFilter] = useState<'Todos' | 'PC' | 'PlayStation' | 'Xbox'>('Todos');
+  const [platformFilter, setPlatformFilter] = useState<'All' | 'PC' | 'PlayStation' | 'Xbox'>('All');
   const [retentionRange, setRetentionRange] = useState<'3d' | '7d' | '30d'>('3d');
   const [sessionRange, setSessionRange] = useState<'24h' | '7d' | '30d'>('30d');
 
@@ -551,14 +537,132 @@ export default function GameDetailPage() {
   const rankListRef = useRef<HTMLDivElement>(null);
   const rankItemRefs = useRef<{[key: number]: HTMLDivElement | null}>({});
 
-  // Mock User para el Header (Para evitar que falle si Header espera props)
   const safeUser = { name: 'Valentín', favoritePlatform: 'PC', avatarUrl: '' };
+
+  // 1. OBTENEMOS EL IDIOMA ACTUAL
+  const { language } = useLanguage();
+
+  // 2. DICCIONARIO DE TRADUCCIONES PARA LA PAGE
+  const translations = {
+    en: {
+      loading: 'Loading game data...',
+      active: 'active',
+      viewStore: 'View Store',
+      totalPlayers: 'Total Players',
+      activeNow: 'Active Now',
+      trending: 'Trending',
+      peakCap: 'Peak Cap.',
+      activity: 'Activity',
+      growth: 'Growth',
+      players: 'Players',
+      topCountries: 'Top Countries',
+      platforms: 'Platforms',
+      all: 'All',
+      marketShare: 'Market Share',
+      playerReception: 'Player Reception',
+      globalScore: 'Global Score',
+      scoreDesc: 'Based on text analysis algorithms of recent reviews.',
+      positive: 'Positive',
+      mixed: 'Mixed',
+      negative: 'Negative',
+      breakdown: 'Breakdown',
+      globalRanking: 'Global Top Ranking',
+      currentRank: 'Current Rank',
+      viewRank: 'View my rank',
+      retentionCurve: 'Retention Curve',
+      rankingHistory: 'Ranking History',
+      rankingHistoryDesc: 'Evolution of position in the global ranking.',
+      sessionDuration: 'Session Duration',
+      acquisitionSources: 'Acquisition Sources',
+      aboutGame: 'About the Game',
+      noDesc: 'No description available.',
+      techSpecs: 'Technical Specs',
+      developer: 'Developer',
+      publisher: 'Publisher',
+      release: 'Release',
+      rating: 'Rating',
+      size: 'Size',
+      control: 'Control',
+      engine: 'Engine',
+      languages: 'Languages',
+      supported: 'supported',
+      genres: 'Genres',
+      modes: 'Modes',
+      gallery: 'Gallery',
+      viewFullGallery: 'VIEW FULL GALLERY',
+      sysReq: 'System Requirements',
+      min: 'Minimum',
+      rec: 'Recommended',
+      singlePlayer: 'Single Player',
+      multiPlayer: 'Multiplayer',
+      traffic: { steam: 'Steam', direct: 'Direct', search: 'Search', social: 'Social' },
+      retentionDay: 'Day',
+      retentionLabel: 'Retention Day'
+    },
+    es: {
+      loading: 'Cargando datos del juego...',
+      active: 'activos',
+      viewStore: 'Ver en Tienda',
+      totalPlayers: 'Total Jugadores',
+      activeNow: 'Activos Ahora',
+      trending: 'Tendencia',
+      peakCap: 'Cap. Máx.',
+      activity: 'Actividad',
+      growth: 'Crecimiento',
+      players: 'Jugadores',
+      topCountries: 'Top Países',
+      platforms: 'Plataformas',
+      all: 'Todos',
+      marketShare: 'Cuota de Mercado',
+      playerReception: 'Recepción de Jugadores',
+      globalScore: 'Score Global',
+      scoreDesc: 'Basado en algoritmos de análisis de texto de reviews recientes.',
+      positive: 'Positivo',
+      mixed: 'Mixto',
+      negative: 'Negativo',
+      breakdown: 'Desglose',
+      globalRanking: 'Top Ranking Global',
+      currentRank: 'Posición Actual',
+      viewRank: 'Ver mi posición',
+      retentionCurve: 'Curva de Retención',
+      rankingHistory: 'Historial de Ranking',
+      rankingHistoryDesc: 'Evolución de la posición en el ranking global.',
+      sessionDuration: 'Duración de Sesiones',
+      acquisitionSources: 'Fuentes de Adquisición',
+      aboutGame: 'Acerca del Juego',
+      noDesc: 'Sin descripción disponible.',
+      techSpecs: 'Ficha Técnica',
+      developer: 'Desarrollador',
+      publisher: 'Editor',
+      release: 'Lanzamiento',
+      rating: 'Clasificación',
+      size: 'Tamaño',
+      control: 'Control',
+      engine: 'Motor',
+      languages: 'Idiomas',
+      supported: 'soportados',
+      genres: 'Géneros',
+      modes: 'Modos',
+      gallery: 'Galería',
+      viewFullGallery: 'VER GALERÍA COMPLETA',
+      sysReq: 'Requisitos del Sistema',
+      min: 'Mínimos',
+      rec: 'Recomendados',
+      singlePlayer: 'Un Jugador',
+      multiPlayer: 'Multijugador',
+      traffic: { steam: 'Steam', direct: 'Directo', search: 'Buscadores', social: 'Social' },
+      retentionDay: 'Día',
+      retentionLabel: 'Retención Día'
+    }
+  };
+
+  const t = translations[language.toLowerCase() as 'en' | 'es'];
 
   // -- CARGA DE DATOS --
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
-    // Buscamos el juego en nuestra "Base de Datos" Mock
+    
     // Safely extract the slug, handling array or string
     const currentSlug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
     const foundGame = GAMES_DATA.find(g => g.slug === currentSlug);
@@ -569,7 +673,6 @@ export default function GameDetailPage() {
             setGame(foundGame);
             setIsFavorite(foundGame.isFavorite || false);
         } else {
-            // Fallback al primer juego (Elden Ring) si no se encuentra
             setGame(GAMES_DATA[0]);
             setIsFavorite(GAMES_DATA[0].isFavorite || false);
         }
@@ -696,7 +799,7 @@ export default function GameDetailPage() {
   }, [game]);
 
   const activePlatformData = useMemo(() => {
-        if (platformFilter === 'Todos') return platformData;
+        if (platformFilter === 'All') return platformData;
         const selected = platformData.find(p => p.name.includes(platformFilter));
         if (!selected) return platformData;
         return [
@@ -710,18 +813,18 @@ export default function GameDetailPage() {
       
       if (retentionRange === '3d') {
            return [
-               { day: 'Día 1', rate: baseD1 },
-               { day: 'Día 2', rate: Math.floor(baseD1 * 0.7) },
-               { day: 'Día 3', rate: Math.floor(baseD1 * 0.5) },
+               { day: `${t.retentionDay} 1`, rate: baseD1 },
+               { day: `${t.retentionDay} 2`, rate: Math.floor(baseD1 * 0.7) },
+               { day: `${t.retentionDay} 3`, rate: Math.floor(baseD1 * 0.5) },
            ];
       }
       
       const days = retentionRange === '7d' ? 7 : 30;
       return Array.from({ length: days }, (_, i) => ({
-          day: `Día ${i + 1}`,
+          day: `${t.retentionDay} ${i + 1}`,
           rate: Math.max(5, Math.floor(baseD1 * Math.pow(retentionRange === '7d' ? 0.8 : 0.92, i)))
       }));
-  }, [game, retentionRange]);
+  }, [game, retentionRange, t.retentionDay]);
   
   const sessionChartData = useMemo<{ range: string; value: number; }[]>(() => {
     let baseData = [
@@ -731,9 +834,7 @@ export default function GameDetailPage() {
     return baseData;
   }, [sessionRange]);
 
-  // -- GENERACIÓN DINÁMICA DE LA LISTA DE RANKING (TOP 10 de tus mocks) --
   const globalRankingList = useMemo(() => {
-      // Tomamos todos los juegos, los ordenamos por ranking actual y mostramos los mejores
       return GAMES_DATA
         .map(g => ({
             pos: g.rankingMovement?.currentRank || 99,
@@ -742,11 +843,11 @@ export default function GameDetailPage() {
             slug: g.slug
         }))
         .sort((a, b) => a.pos - b.pos)
-        .slice(0, 15); // Top 15
+        .slice(0, 15);
   }, []);
 
   if (loading || !game) {
-    return <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-white">Cargando datos del juego...</div>;
+    return <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-white">{t.loading}</div>;
   }
 
   // --- VARIABLES PARA UI ---
@@ -760,7 +861,7 @@ export default function GameDetailPage() {
   const peakCapacity = Math.min(95, Math.floor((currentPlayers / peakAllTime) * 100)) || 65;
   
   const currentRetentionRate = retentionChartData.length > 0 ? retentionChartData[retentionChartData.length - 1].rate : 0;
-  const currentRetentionLabel = `Retención Día ${retentionChartData.length}`;
+  const currentRetentionLabel = `${t.retentionLabel} ${retentionChartData.length}`;
 
   const topCountriesData = game.kpiSeries?.topCountries?.map(c => ({
       name: c.country,
@@ -769,10 +870,15 @@ export default function GameDetailPage() {
   })) || [];
 
   const sentimentData: SentimentEntry[] = game.userReviews ? [
-      { name: 'Positivo', value: game.userReviews.positivePercent, fill: 'url(#gradSentimentPos)', color: PALETTE.VERDE },
-      { name: 'Mixto', value: game.userReviews.mixedPercent, fill: '#666', color: '#666' },
-      { name: 'Negativo', value: game.userReviews.negativePercent, fill: 'url(#gradSentimentNeg)', color: PALETTE.ROSA },
+      { name: t.positive, value: game.userReviews.positivePercent, fill: 'url(#gradSentimentPos)', color: PALETTE.VERDE },
+      { name: t.mixed, value: game.userReviews.mixedPercent, fill: '#666', color: '#666' },
+      { name: t.negative, value: game.userReviews.negativePercent, fill: 'url(#gradSentimentNeg)', color: PALETTE.ROSA },
   ] : [];
+
+  // MOCK LOGIC: Descripción localizada si existe
+  const displayDescription = language === 'EN' && game.meta?.description_en 
+    ? game.meta.description_en 
+    : game.meta?.description_es || game.meta?.description;
 
   return (
     <div 
@@ -820,7 +926,7 @@ export default function GameDetailPage() {
         
         <div className="flex flex-col md:flex-row gap-8 flex-1 items-stretch">
           
-          {/* ➡️ SIDEBAR (VERTICAL MENU) IMPORTADO Y CONFIGURADO IGUAL QUE ALLGAMESPAGE */}
+          {/* ➡️ SIDEBAR */}
           <aside className="hidden md:block w-[260px] shrink-0 relative">
              <div className="sticky top-[74px] pt-10 pb-10 h-[calc(100vh-74px)] overflow-y-auto no-scrollbar">
                 <VerticalMenu activeItem="all-games" /> 
@@ -829,10 +935,7 @@ export default function GameDetailPage() {
 
           <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10">
             
-            {/* TU CONTENIDO ORIGINAL (Charts, Hero, etc.) */}
-            
             {/* --- HERO SECTION --- */}
-            {/* MODIFICADO: h-[50vh] -> min-h-[60vh] md:h-[50vh] h-auto para que crezca en mobile */}
             <div className="relative min-h-[60vh] md:h-[50vh] h-auto w-full group rounded-2xl overflow-hidden border border-white/5 animate-fade-up">
                 <div 
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
@@ -878,7 +981,7 @@ export default function GameDetailPage() {
                         {/* 3. Activos */}
                         <div className="flex items-center gap-2 bg-neutral-900/50 px-3 py-1 rounded-full backdrop-blur-sm border border-white/5 transition-all duration-300 hover:border-[#50a2ff] hover:bg-[#50a2ff]/10 hover:shadow-[0_0_15px_rgba(80,162,255,0.2)] group cursor-default">
                           <Users size={18} style={{ color: PALETTE.CEL_AZUL }} className="group-hover:scale-110 transition-transform duration-300" />
-                          <span className="group-hover:text-white transition-colors duration-300">{currentPlayers.toLocaleString()} activos</span>
+                          <span className="group-hover:text-white transition-colors duration-300">{currentPlayers.toLocaleString()} {t.active}</span>
                         </div>
                         
                         {/* 4. Fecha */}
@@ -889,7 +992,7 @@ export default function GameDetailPage() {
                       </div>
                     </div>
 
-                    {/* BOTONES DE ACCIÓN: FIX - Misma altura h-12 y centrados */}
+                    {/* BOTONES DE ACCIÓN */}
                     <div className="flex items-center gap-4 mb-2 animate-fade-up delay-300 w-full md:w-auto justify-center">
                         <a 
                             href={game.storeUrl || '#'} 
@@ -897,7 +1000,7 @@ export default function GameDetailPage() {
                             rel="noopener noreferrer"
                             className="h-12 flex items-center justify-center whitespace-nowrap px-6 md:px-8 text-sm md:text-base rounded-xl font-bold bg-[#50a2ff] text-white hover:bg-[#50a2ff]/90 transition-all shadow-[0_0_20px_rgba(80,162,255,0.3)] hover:shadow-[0_0_30px_rgba(80,162,255,0.6)] hover:scale-105 active:scale-95 font-sans tracking-wide"
                         >
-                            Ver en Tienda
+                            {t.viewStore}
                         </a>
                         
                         <button 
@@ -926,7 +1029,7 @@ export default function GameDetailPage() {
                       <CircularMetric 
                         value={75} 
                         displayValue={(totalOwners / 1000000).toFixed(1) + "M+"}
-                        label="Total Jugadores"
+                        label={t.totalPlayers}
                         gradientId="gradTotalOwners"
                         colors={['#4530BE', PALETTE.LILA]}
                         icon={Users}
@@ -934,7 +1037,7 @@ export default function GameDetailPage() {
                     <CircularMetric 
                         value={45} 
                         displayValue={currentPlayers.toLocaleString()}
-                        label="Activos Ahora"
+                        label={t.activeNow}
                         gradientId="gradActiveNow"
                         colors={[PALETTE.CYAN, PALETTE.VERDE]} 
                         icon={Users2}
@@ -942,7 +1045,7 @@ export default function GameDetailPage() {
                     <CircularMetric 
                         value={trendingScore} 
                         displayValue={trendingScore + "%"}
-                        label="Trending"
+                        label={t.trending}
                         gradientId="gradTrending"
                         colors={['#4530BE', '#2DD4E0']}
                         icon={TrendingUp}
@@ -950,7 +1053,7 @@ export default function GameDetailPage() {
                     <CircularMetric 
                         value={peakCapacity} 
                         displayValue={peakCapacity + "%"}
-                        label="Peak Cap."
+                        label={t.peakCap}
                         gradientId="gradPeak"
                         colors={[PALETTE.LILA, PALETTE.ROSA]}
                         icon={Trophy}
@@ -964,7 +1067,7 @@ export default function GameDetailPage() {
                       <div className="bg-neutral-900 p-6 rounded-2xl border border-neutral-800 shadow-xl w-full h-80 flex flex-col transition-all duration-300 hover:border-[#f6339a] hover:shadow-2xl">
                           <div className="flex justify-between items-center mb-4 border-b border-neutral-800 pb-2">
                             <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                                <Clock size={20} style={{ color: PALETTE.ROSA }} /> Actividad
+                                <Clock size={20} style={{ color: PALETTE.ROSA }} /> {t.activity}
                             </h3>
                             <div className="flex gap-1 bg-neutral-800 rounded-lg p-1">
                                 {['24h', '7d', '30d'].map(range => (
@@ -1012,6 +1115,7 @@ export default function GameDetailPage() {
                                       <Area
                                           type="monotone"
                                           dataKey="players"
+                                          name={t.players}
                                           stroke="url(#activityChartGradient)" 
                                           fill="url(#activityFillGradient)"    
                                           fillOpacity={1}
@@ -1030,7 +1134,7 @@ export default function GameDetailPage() {
                           
                           <div className="flex justify-between items-center mb-4 border-b border-neutral-800 pb-2">
                             <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                                <LineChartIcon size={20} style={{ color: PALETTE.CYAN }} /> Crecimiento
+                                <LineChartIcon size={20} style={{ color: PALETTE.CYAN }} /> {t.growth}
                             </h3>
                             <div className="flex gap-1 bg-neutral-800 rounded-lg p-1">
                                 {['14d', '30d', '90d'].map(range => (
@@ -1082,7 +1186,7 @@ export default function GameDetailPage() {
                                     <Area 
                                         type="monotone" 
                                         dataKey="players" 
-                                        name="Jugadores"
+                                        name={t.players}
                                         stroke="url(#growthStrokeGradient)" 
                                         fillOpacity={1} 
                                         fill="url(#colorGrowth)" 
@@ -1101,7 +1205,7 @@ export default function GameDetailPage() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-up delay-400">
                     <div className="bg-neutral-900 p-6 rounded-2xl border border-neutral-800 shadow-xl h-80 flex flex-col transition-all duration-300 hover:border-[#b340bf] hover:shadow-2xl">
                         <h3 className="font-bold text-lg mb-4 text-white border-b border-neutral-800 pb-2 flex items-center gap-2">
-                            <Globe size={20} style={{ color: PALETTE.LILA }} /> Top Países
+                            <Globe size={20} style={{ color: PALETTE.LILA }} /> {t.topCountries}
                         </h3>
                         <ul className="space-y-3 pt-2 flex-1 overflow-y-auto pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-700 [&::-webkit-scrollbar-thumb]:rounded-full">
                             {topCountriesData.map((country, index) => (
@@ -1124,20 +1228,20 @@ export default function GameDetailPage() {
                     <div className="bg-neutral-900 p-6 rounded-2xl border border-neutral-800 shadow-xl h-80 flex flex-col transition-all duration-300 hover:border-[#50a2ff] hover:shadow-2xl">
                         <div className="flex justify-between items-center mb-4 border-b border-neutral-800 pb-2">
                             <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                                <Monitor size={20} style={{ color: PALETTE.CEL_AZUL }} /> Plataformas
+                                <Monitor size={20} style={{ color: PALETTE.CEL_AZUL }} /> {t.platforms}
                             </h3>
                             <div className="flex gap-1 bg-neutral-800 rounded-lg p-1">
-                                {['Todos', 'PC', 'PlayStation', 'Xbox'].map(plat => (
+                                {['All', 'PC', 'PlayStation', 'Xbox'].map(plat => (
                                     <button
                                         key={plat}
-                                        onClick={() => setPlatformFilter(plat as 'Todos' | 'PC' | 'PlayStation' | 'Xbox')}
+                                        onClick={() => setPlatformFilter(plat as 'All' | 'PC' | 'PlayStation' | 'Xbox')}
                                         className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${
                                             platformFilter === plat
                                             ? 'bg-neutral-700 text-white shadow-sm' 
                                             : 'text-gray-500 hover:text-white hover:bg-neutral-800/50' 
                                         }`}
                                     >
-                                        {plat === 'PlayStation' ? 'PS' : plat}
+                                        {plat === 'All' ? t.all : plat === 'PlayStation' ? 'PS' : plat}
                                     </button>
                                 ))}
                             </div>
@@ -1165,7 +1269,7 @@ export default function GameDetailPage() {
                                             data={activePlatformData} 
                                             innerRadius={55} 
                                             outerRadius={75} 
-                                            paddingAngle={platformFilter === 'Todos' ? 5 : 0} 
+                                            paddingAngle={platformFilter === 'All' ? 5 : 0} 
                                             dataKey="value"
                                             startAngle={90}
                                             endAngle={-270}
@@ -1186,7 +1290,7 @@ export default function GameDetailPage() {
                             </div>
                             
                             <div className="flex flex-col justify-center gap-3 text-sm px-6">
-                                {platformFilter === 'Todos' ? (
+                                {platformFilter === 'All' ? (
                                     platformData.map((p) => (
                                         <div key={p.name} className="flex justify-between items-center group">
                                             <span className="flex items-center gap-3">
@@ -1202,7 +1306,7 @@ export default function GameDetailPage() {
                                         if (!selected) return null;
                                         return (
                                             <div className="flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-300">
-                                                <p className="text-gray-400 text-xs uppercase font-bold mb-1">Cuota de Mercado</p>
+                                                <p className="text-gray-400 text-xs uppercase font-bold mb-1">{t.marketShare}</p>
                                                 <p className="text-5xl font-black mb-2 drop-shadow-lg" style={{ color: selected.color }}>
                                                     {selected.value}%
                                                 </p>
@@ -1224,7 +1328,7 @@ export default function GameDetailPage() {
                     {/* Tarjeta de Sentimiento y Puntuación */}
                     <div className="lg:col-span-4 bg-neutral-900/80 backdrop-blur-sm p-6 rounded-2xl border border-neutral-800 shadow-xl flex flex-col justify-between h-80 transition-all duration-300 hover:border-[#00FF62] hover:shadow-2xl">
                         <h3 className="font-bold text-lg mb-2 text-white flex items-center gap-2">
-                            <Heart size={20} style={{ color: PALETTE.VERDE }} /> Recepción de Jugadores
+                            <Heart size={20} style={{ color: PALETTE.VERDE }} /> {t.playerReception}
                         </h3>
                         
                         <div className="flex items-center justify-between py-4">
@@ -1262,13 +1366,13 @@ export default function GameDetailPage() {
 
                             <div className="flex-1 pl-6 space-y-3">
                                   <div className="flex justify-between text-sm text-gray-400 mb-1">
-                                    <span>Score Global</span>
+                                    <span>{t.globalScore}</span>
                                     <span className="text-white font-bold">{score} / 100</span>
                                   </div>
                                   <div className="w-full bg-neutral-800 h-2 rounded-full overflow-hidden">
                                     <div className="h-full bg-gradient-to-r from-green-500 to-emerald-400" style={{ width: `${score}%` }}></div>
                                   </div>
-                                  <p className="text-xs text-gray-500 italic mt-2">Basado en algoritmos de análisis de texto de reviews recientes.</p>
+                                  <p className="text-xs text-gray-500 italic mt-2">{t.scoreDesc}</p>
                             </div>
                         </div>
 
@@ -1285,7 +1389,7 @@ export default function GameDetailPage() {
                     {/* Distribución de Estrellas */}
                     <div className="lg:col-span-4 bg-neutral-900/80 backdrop-blur-sm p-6 rounded-2xl border border-neutral-800 shadow-xl flex flex-col h-80 transition-all duration-300 hover:border-[#efb537] hover:shadow-2xl">
                         <h3 className="font-bold text-lg mb-6 text-white flex items-center gap-2">
-                            <Star size={20} style={{ color: PALETTE.AMARILLO }} /> Breakdown
+                            <Star size={20} style={{ color: PALETTE.AMARILLO }} /> {t.breakdown}
                         </h3>
                         <div className="flex-1 flex flex-col justify-center space-y-3">
                             {['5', '4', '3', '2', '1'].map((stars) => {
@@ -1304,20 +1408,20 @@ export default function GameDetailPage() {
 
                                 return (
                                     <div key={stars} className="group flex items-center gap-3 text-xs sm:text-sm">
-                                        <div className="flex items-center gap-1 w-8 justify-end text-gray-400">
-                                            <span className="font-bold">{stars}</span>
-                                            <Star size={10} className="fill-gray-600 text-gray-600" />
-                                        </div>
-                                        <div className="flex-1 h-2 bg-neutral-800 rounded-full overflow-hidden">
-                                            <div 
-                                                className="h-full rounded-full transition-all duration-1000 group-hover:brightness-110" 
-                                                style={{ 
-                                                    width: `${percent}%`, 
-                                                    background: backgroundStyle 
-                                                }} 
-                                            />
-                                        </div>
-                                        <span className="w-8 text-right font-mono text-gray-500">{percent}%</span>
+                                            <div className="flex items-center gap-1 w-8 justify-end text-gray-400">
+                                                <span className="font-bold">{stars}</span>
+                                                <Star size={10} className="fill-gray-600 text-gray-600" />
+                                            </div>
+                                            <div className="flex-1 h-2 bg-neutral-800 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full rounded-full transition-all duration-1000 group-hover:brightness-110" 
+                                                    style={{ 
+                                                        width: `${percent}%`, 
+                                                        background: backgroundStyle 
+                                                    }} 
+                                                />
+                                            </div>
+                                            <span className="w-8 text-right font-mono text-gray-500">{percent}%</span>
                                     </div>
                                 );
                             })}
@@ -1328,13 +1432,13 @@ export default function GameDetailPage() {
                     <div className="lg:col-span-4 bg-neutral-900/80 backdrop-blur-sm p-6 rounded-2xl border border-neutral-800 shadow-xl flex flex-col h-80 transition-all duration-300 hover:border-[#efb537] hover:shadow-2xl">
                         <div className="flex justify-between items-center mb-4 border-b border-neutral-800 pb-2">
                             <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                                <Trophy size={20} style={{ color: PALETTE.AMARILLO }} /> Top Ranking Global
+                                <Trophy size={20} style={{ color: PALETTE.AMARILLO }} /> {t.globalRanking}
                             </h3>
                             <button 
                                 onClick={handleScrollToRank}
                                 className="text-xs bg-neutral-800 hover:bg-[#efb537]/20 hover:text-[#efb537] text-gray-400 px-3 py-1.5 rounded-lg border border-neutral-700 transition-all flex items-center gap-2 font-bold"
                             >
-                                <LocateFixed size={14}/> Ver mi posición
+                                <LocateFixed size={14}/> {t.viewRank}
                             </button>
                         </div>
 
@@ -1358,31 +1462,31 @@ export default function GameDetailPage() {
                                                 : 'hover:bg-neutral-800 border border-transparent'
                                         }`}
                                     >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-6 flex justify-center">
-                                                <RankMedal rank={item.pos} />
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-6 flex justify-center">
+                                                    <RankMedal rank={item.pos} />
+                                                </div>
+                                                <span className={`font-medium ${isCurrent ? 'text-white' : 'text-gray-400'}`}>
+                                                    {item.name}
+                                                </span>
                                             </div>
-                                            <span className={`font-medium ${isCurrent ? 'text-white' : 'text-gray-400'}`}>
-                                                {item.name}
-                                            </span>
-                                        </div>
-                                        {item.change === 'up' && <TrendingUp size={14} className="text-green-500" />}
-                                        {item.change === 'down' && <TrendingUp size={14} className="text-red-500 rotate-180" />}
-                                        {item.change === 'same' && <div className="w-2 h-0.5 bg-gray-600"></div>}
+                                            {item.change === 'up' && <TrendingUp size={14} className="text-green-500" />}
+                                            {item.change === 'down' && <TrendingUp size={14} className="text-red-500 rotate-180" />}
+                                            {item.change === 'same' && <div className="w-2 h-0.5 bg-gray-600"></div>}
                                     </div>
                                 );
                             })}
                         </div>
                     </div>
                   </div>
-
+                  
                   {/* 5. Retención y Gráficos Finales */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-up delay-600">
                       <div className="bg-neutral-900/80 backdrop-blur-sm p-6 rounded-2xl border border-neutral-800 shadow-xl h-80 flex flex-col relative overflow-hidden group transition-all duration-300 hover:border-[#f6339a] hover:shadow-2xl">
                         <div className="flex justify-between items-end mb-6 border-b border-neutral-800 pb-4 z-10">
                             <div>
                                 <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                                    <Users2 size={20} style={{ color: PALETTE.ROSA }} /> Curva de Retención
+                                    <Users2 size={20} style={{ color: PALETTE.ROSA }} /> {t.retentionCurve}
                                 </h3>
                                 <div className="flex gap-1 mt-2">
                                     {['3d', '7d', '30d'].map(range => (
@@ -1410,14 +1514,14 @@ export default function GameDetailPage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={retentionChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                     <defs>
-                                        <linearGradient id="gradRetentionStroke" x1="0" y1="0" x2="1" y2="0">
-                                            <stop offset="0%" stopColor={PALETTE.ROSA} />
-                                            <stop offset="100%" stopColor={PALETTE.LILA} />
-                                        </linearGradient>
-                                        <linearGradient id="gradRetentionFill" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor={PALETTE.ROSA} stopOpacity={0.4}/>
-                                            <stop offset="95%" stopColor={PALETTE.LILA} stopOpacity={0}/>
-                                        </linearGradient>
+                                            <linearGradient id="gradRetentionStroke" x1="0" y1="0" x2="1" y2="0">
+                                                <stop offset="0%" stopColor={PALETTE.ROSA} />
+                                                <stop offset="100%" stopColor={PALETTE.LILA} />
+                                            </linearGradient>
+                                            <linearGradient id="gradRetentionFill" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor={PALETTE.ROSA} stopOpacity={0.4}/>
+                                                <stop offset="95%" stopColor={PALETTE.LILA} stopOpacity={0}/>
+                                            </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
                                     <XAxis dataKey="day" stroke="#666" fontSize={12} tickLine={false} axisLine={false} dy={10} minTickGap={30} />
@@ -1427,7 +1531,7 @@ export default function GameDetailPage() {
                                     <Area 
                                         type="monotone" 
                                         dataKey="rate" 
-                                        name="Este Juego"
+                                        name={t.players}
                                         stroke="url(#gradRetentionStroke)" 
                                         fill="url(#gradRetentionFill)" 
                                         strokeWidth={4} 
@@ -1444,13 +1548,13 @@ export default function GameDetailPage() {
                          <div className="flex justify-between items-end mb-6 border-b border-neutral-800 pb-4 z-10">
                             <div>
                                 <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                                    <Trophy size={20} style={{ color: PALETTE.AMARILLO }} /> Historial de Ranking
+                                    <Trophy size={20} style={{ color: PALETTE.AMARILLO }} /> {t.rankingHistory}
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-1">Evolución de la posición en el ranking global.</p>
+                                <p className="text-xs text-gray-500 mt-1">{t.rankingHistoryDesc}</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-2xl font-black text-white">#{game.rankingMovement?.currentRank}</p>
-                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Posición Actual</p>
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">{t.currentRank}</p>
                             </div>
                         </div>
 
@@ -1458,16 +1562,16 @@ export default function GameDetailPage() {
                               <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={rankingHistoryData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
                                     <defs>
-                                        <linearGradient id="gradRankingStroke" x1="0" y1="0" x2="1" y2="0">
-                                            <stop offset="0%" stopColor={PALETTE.AMARILLO} />
-                                            <stop offset="50%" stopColor="#ff8f6b" />
-                                            <stop offset="100%" stopColor={PALETTE.ROSA} />
-                                        </linearGradient>
-                                        <linearGradient id="gradRankingFill" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor={PALETTE.AMARILLO} stopOpacity={0.6}/>
-                                            <stop offset="50%" stopColor={PALETTE.AMARILLO} stopOpacity={0.2}/>
-                                            <stop offset="95%" stopColor={PALETTE.ROSA} stopOpacity={0}/>
-                                        </linearGradient>
+                                            <linearGradient id="gradRankingStroke" x1="0" y1="0" x2="1" y2="0">
+                                                <stop offset="0%" stopColor={PALETTE.AMARILLO} />
+                                                <stop offset="50%" stopColor="#ff8f6b" />
+                                                <stop offset="100%" stopColor={PALETTE.ROSA} />
+                                            </linearGradient>
+                                            <linearGradient id="gradRankingFill" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor={PALETTE.AMARILLO} stopOpacity={0.6}/>
+                                                <stop offset="50%" stopColor={PALETTE.AMARILLO} stopOpacity={0.2}/>
+                                                <stop offset="95%" stopColor={PALETTE.ROSA} stopOpacity={0}/>
+                                            </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
                                     <XAxis 
@@ -1484,7 +1588,7 @@ export default function GameDetailPage() {
                                     <Area 
                                         type="monotone" 
                                         dataKey="rank" 
-                                        name="Ranking"
+                                        name="Rank"
                                         stroke="url(#gradRankingStroke)" 
                                         fill="url(#gradRankingFill)"
                                         strokeWidth={4} 
@@ -1503,7 +1607,7 @@ export default function GameDetailPage() {
                       <div className="bg-neutral-900/80 backdrop-blur-sm p-6 rounded-2xl border border-neutral-800 shadow-xl h-80 flex flex-col relative overflow-hidden group transition-all duration-300 hover:border-[#50a2ff] hover:shadow-2xl">
                           <div className="flex justify-between items-center mb-4 border-b border-neutral-800 pb-2">
                             <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                                <Timer size={20} style={{ color: PALETTE.CEL_AZUL }} /> Duración de Sesiones
+                                <Timer size={20} style={{ color: PALETTE.CEL_AZUL }} /> {t.sessionDuration}
                             </h3>
                             <div className="flex gap-1 bg-neutral-800 rounded-lg p-1">
                                 {['24h', '7d', '30d'].map(range => (
@@ -1535,8 +1639,16 @@ export default function GameDetailPage() {
                                     <XAxis dataKey="range" stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
                                     <YAxis stroke="#666" fontSize={12} tickLine={false} axisLine={false} unit="%" />
                                     <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
-                                    <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={60} fill="url(#gradSession)">
-                                      <LabelList dataKey="value" position="top" fill="white" fontSize={12} formatter={(val) => typeof val === 'number' ? `${val}%` : val} />
+                                    <Bar dataKey="value" name="%" radius={[4, 4, 0, 0]} barSize={60} fill="url(#gradSession)">
+                                      { }
+                                      <LabelList 
+                                        dataKey="value" 
+                                        position="top" 
+                                        fill="white" 
+                                        fontSize={12} 
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        formatter={(val: any) => typeof val === 'number' ? `${val}%` : String(val)} 
+                                      />
                                     </Bar>
                                   </BarChart>
                               </ResponsiveContainer>
@@ -1546,7 +1658,7 @@ export default function GameDetailPage() {
                       {/* Fuentes de Tráfico */}
                         <div className="bg-neutral-900/80 backdrop-blur-sm p-6 rounded-2xl border border-neutral-800 shadow-xl h-80 flex flex-col relative overflow-hidden group transition-all duration-300 hover:border-[#00FF62] hover:shadow-2xl">
                             <h3 className="font-bold text-lg mb-2 text-white border-b border-neutral-800 pb-2 flex items-center gap-2">
-                            <Target size={20} style={{ color: PALETTE.VERDE }} /> Fuentes de Adquisición
+                            <Target size={20} style={{ color: PALETTE.VERDE }} /> {t.acquisitionSources}
                             </h3>
                             
                             <div className="flex-1 w-full min-h-0 flex items-center">
@@ -1560,9 +1672,9 @@ export default function GameDetailPage() {
                                             barSize={15} 
                                             data={TRAFFIC_DATA.map(d => ({
                                                 ...d,
-                                                fill: d.source === 'Steam' ? 'url(#gradRadialViolet)' : 
-                                                    d.source === 'Directo' ? 'url(#gradRadialGreen)' :  
-                                                    d.source === 'Buscadores' ? 'url(#gradRadialCyan)' : 
+                                                fill: d.source === 'steam' ? 'url(#gradRadialViolet)' : 
+                                                    d.source === 'direct' ? 'url(#gradRadialGreen)' :  
+                                                    d.source === 'search' ? 'url(#gradRadialCyan)' : 
                                                     'url(#gradRadialPink)' 
                                             })).reverse()} 
                                             startAngle={90} 
@@ -1602,17 +1714,19 @@ export default function GameDetailPage() {
                                 <div className="w-1/2 pl-4 flex flex-col justify-center gap-3">
                                     {TRAFFIC_DATA.map((item) => {
                                         let color = PALETTE.MORADO;
-                                        if(item.source === 'Steam') { color = PALETTE.LILA; } 
-                                        if(item.source === 'Directo') { color = PALETTE.VERDE; } 
-                                        if(item.source === 'Buscadores') { color = PALETTE.CYAN; } 
-                                        if(item.source === 'Social') { color = PALETTE.ROSA; } 
+                                        if(item.source === 'steam') { color = PALETTE.LILA; } 
+                                        if(item.source === 'direct') { color = PALETTE.VERDE; } 
+                                        if(item.source === 'search') { color = PALETTE.CYAN; } 
+                                        if(item.source === 'social') { color = PALETTE.ROSA; } 
 
                                         return (
                                             <div key={item.source} className="flex items-center justify-between group/item">
                                                 <div className="flex items-center gap-2 w-full">
                                                     <div className="flex flex-col w-full">
                                                         <div className="flex justify-between items-center mb-1">
-                                                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">{item.source}</span>
+                                                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+                                                                {t.traffic[item.source as keyof typeof t.traffic]}
+                                                            </span>
                                                         </div>
                                                         <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden relative">
                                                             <div className="h-full rounded-full absolute top-0 left-0 transition-all duration-1000 ease-out" style={{ width: `${item.value}%`, backgroundColor: color }} />
@@ -1632,53 +1746,53 @@ export default function GameDetailPage() {
                 <aside className="xl:col-span-3 flex flex-col gap-6 h-full animate-fade-up delay-600">
                   <div className="bg-neutral-900 p-6 rounded-2xl border border-neutral-800 shadow-xl flex flex-col transition-all duration-300 hover:border-neutral-600 hover:shadow-2xl flex-1 min-h-[200px]">
                       <h3 className="font-bold text-lg mb-4 text-white border-b border-neutral-800 pb-2 flex items-center gap-2">
-                         <Info size={18} className="text-gray-400"/> Acerca del Juego
+                         <Info size={18} className="text-gray-400"/> {t.aboutGame}
                       </h3>
                       <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-line">
-                          {game.meta?.description || "Sin descripción disponible."}
+                          {displayDescription || t.noDesc}
                       </p>
                   </div>
                   
                   <div className="bg-neutral-900 p-6 rounded-2xl border border-neutral-800 shadow-xl h-auto flex flex-col transition-all duration-300 hover:border-neutral-600 hover:shadow-2xl">
                       <h3 className="font-bold text-lg mb-4 text-white border-b border-neutral-800 pb-2 flex items-center gap-2">
-                         <FileText size={18} className="text-gray-400"/> Ficha Técnica
+                         <FileText size={18} className="text-gray-400"/> {t.techSpecs}
                       </h3>
                       <ul className="space-y-4 text-sm text-gray-400">
                         <li className="flex justify-between">
-                          <span>Desarrollador</span>
+                          <span>{t.developer}</span>
                           <span className="text-white font-medium">{game.meta?.developer}</span>
                         </li>
                         <li className="flex justify-between">
-                          <span>Editor</span>
+                          <span>{t.publisher}</span>
                           <span className="text-white font-medium">{game.meta?.publisher}</span>
                         </li>
                         <li className="flex justify-between">
-                          <span>Lanzamiento</span>
+                          <span>{t.release}</span>
                           <span className="text-white font-medium">{game.meta?.releaseDate}</span>
                         </li>
                         <li className="flex justify-between">
-                          <span>Clasificación</span>
+                          <span>{t.rating}</span>
                           <span className="text-white font-medium flex items-center gap-1"><Shield size={12}/> {game.meta?.ageRating || "M (17+)"}</span>
                         </li>
                         <li className="flex justify-between">
-                          <span>Tamaño</span>
+                          <span>{t.size}</span>
                           <span className="text-white font-medium flex items-center gap-1"><HardDrive size={12}/> {game.meta?.downloadSize || "60 GB"}</span>
                         </li>
                         <li className="flex justify-between">
-                          <span>Control</span>
+                          <span>{t.control}</span>
                           <span className="text-white font-medium flex items-center gap-1"><Gamepad2 size={12}/> {game.meta?.controllerSupport ? "Total" : "Parcial"}</span>
                         </li>
                           <li className="flex justify-between">
-                          <span>Motor</span>
+                          <span>{t.engine}</span>
                           <span className="text-white font-medium flex items-center gap-1"><Box size={12}/> {game.meta?.engine || "Proprietary"}</span>
                         </li>
                         <li className="flex justify-between">
-                          <span>Idiomas</span>
-                          <span className="text-white font-medium flex items-center gap-1"><Languages size={12}/> {game.meta?.languages?.length || "12"} soportados</span>
+                          <span>{t.languages}</span>
+                          <span className="text-white font-medium flex items-center gap-1"><Languages size={12}/> {game.meta?.languages?.length || "12"} {t.supported}</span>
                         </li>
 
                         <li className="pt-2">
-                          <span className="block mb-2">Géneros</span>
+                          <span className="block mb-2">{t.genres}</span>
                           <div className="flex flex-wrap gap-2 justify-end">
                             {game.meta?.genres?.map((g: string) => (
                               <span key={g} className="px-2 py-1 bg-neutral-800 rounded text-xs text-gray-300 border border-[#b340bf]/50">{g}</span>
@@ -1686,11 +1800,11 @@ export default function GameDetailPage() {
                           </div>
                         </li>
                           <li className="pt-2">
-                          <span className="block mb-2">Modos</span>
+                          <span className="block mb-2">{t.modes}</span>
                           <div className="flex flex-wrap gap-2 justify-end">
                             {game.meta?.gameModes?.map((m: string) => (
                               <span key={m} className="px-2 py-1 bg-neutral-800 rounded text-xs text-gray-300 border border-[#50a2ff]/50">{m}</span>
-                            )) || ["Un jugador", "Multijugador"].map(m => <span key={m} className="px-2 py-1 bg-neutral-800 rounded text-xs text-gray-300 border border-[#50a2ff]/50">{m}</span>)}
+                            )) || [t.singlePlayer, t.multiPlayer].map(m => <span key={m} className="px-2 py-1 bg-neutral-800 rounded text-xs text-gray-300 border border-[#50a2ff]/50">{m}</span>)}
                           </div>
                         </li>
                       </ul>
@@ -1699,7 +1813,7 @@ export default function GameDetailPage() {
                   <div className="bg-neutral-900 p-6 rounded-2xl border border-neutral-800 shadow-xl h-96 flex flex-col group/card transition-all duration-300 hover:border-neutral-600 hover:shadow-2xl">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="font-bold text-lg text-white border-b border-neutral-800 pb-2 flex-grow flex items-center gap-2">
-                            <ImageIcon size={18} className="text-gray-400"/> Galería
+                            <ImageIcon size={18} className="text-gray-400"/> {t.gallery}
                         </h3>
                     </div>
                     
@@ -1737,19 +1851,19 @@ export default function GameDetailPage() {
                         className="w-full py-3 bg-neutral-800 border border-neutral-700 text-gray-300 rounded-xl transition-all duration-300 font-bold tracking-wide text-xs flex items-center justify-center gap-2 group/btn shadow-lg hover:bg-[#f6339a] hover:border-[#f6339a] hover:text-white hover:shadow-[0_0_30px_rgba(246,51,154,0.6)]"
                     >
                         <ImageIcon size={16} className="group-hover/btn:scale-110 transition-transform" />
-                        VER GALERÍA COMPLETA
+                        {t.viewFullGallery}
                     </button>
                   </div>
 
                   <div className="bg-neutral-900 p-6 rounded-2xl border border-neutral-800 shadow-xl h-auto flex flex-col transition-all duration-300 hover:border-neutral-600 hover:shadow-2xl">
                       <h3 className="font-bold text-lg mb-4 text-white border-b border-neutral-800 pb-2 flex items-center gap-2">
-                         <Monitor size={18} className="text-gray-400"/> Requisitos del Sistema
+                         <Monitor size={18} className="text-gray-400"/> {t.sysReq}
                       </h3>
                       
                       <div className="flex flex-col justify-center gap-8 px-2 py-4 h-full"> 
                         
                         <div className="flex flex-col gap-3">
-                           <p className="font-bold text-gray-500 uppercase tracking-wide text-xs border-b border-neutral-800 pb-2 mb-1">Mínimos</p>
+                           <p className="font-bold text-gray-500 uppercase tracking-wide text-xs border-b border-neutral-800 pb-2 mb-1">{t.min}</p>
                            <div className="space-y-5">
                                <div>
                                    <div className="flex items-center gap-2 text-gray-500 mb-1 text-sm uppercase"><Cpu size={16}/> CPU</div>
@@ -1767,7 +1881,7 @@ export default function GameDetailPage() {
                         </div>
                         
                         <div className="flex flex-col gap-3">
-                           <p className="font-bold text-[#50a2ff] uppercase tracking-wide text-xs border-b border-neutral-800 pb-2 mb-1">Recomendados</p>
+                           <p className="font-bold text-[#50a2ff] uppercase tracking-wide text-xs border-b border-neutral-800 pb-2 mb-1">{t.rec}</p>
                            <div className="space-y-5">
                                <div>
                                    <div className="flex items-center gap-2 text-gray-500 mb-1 text-sm uppercase"><Cpu size={16} className="text-[#50a2ff]"/> CPU</div>

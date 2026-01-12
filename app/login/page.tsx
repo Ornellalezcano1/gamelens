@@ -11,8 +11,11 @@ import {
   Lock, 
   ArrowRight, 
   Loader2, 
-  AlertCircle 
+  AlertCircle,
+  Globe // Importamos el icono para el switch
 } from 'lucide-react';
+// 1. IMPORTAR CONTEXTO
+import { useLanguage } from '@/app/context/LanguageContext';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,6 +23,57 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // 2. HOOK DE IDIOMA
+  const { language, toggleLanguage } = useLanguage();
+
+  // 3. DICCIONARIO DE TRADUCCIONES
+  const translations = {
+    en: {
+      welcomeTitle: "Welcome Back!",
+      welcomeSub: "Good to see you again, GameLens awaits.",
+      emailLabel: "Email",
+      emailPlaceholder: "user@gamelens.com",
+      passwordLabel: "Password",
+      passwordPlaceholder: "••••••••",
+      forgotPass: "Forgot password?",
+      loginBtn: "Sign In",
+      loadingBtn: "Signing in...",
+      orContinue: "Or continue with",
+      google: "Google",
+      discord: "Discord",
+      noAccount: "Don't have an account?",
+      signUp: "Sign up",
+      errors: {
+        invalid: "Invalid credentials. Please check your email and password.",
+        tooMany: "Too many failed attempts. Please try again later.",
+        generic: "An error occurred. Please try again."
+      }
+    },
+    es: {
+      welcomeTitle: "¡Bienvenido!",
+      welcomeSub: "Qué bueno verte de nuevo, GameLens te espera.",
+      emailLabel: "Email",
+      emailPlaceholder: "usuario@gamelens.com",
+      passwordLabel: "Contraseña",
+      passwordPlaceholder: "••••••••",
+      forgotPass: "¿Olvidaste tu contraseña?",
+      loginBtn: "Iniciar Sesión",
+      loadingBtn: "Iniciando...",
+      orContinue: "O continúa con",
+      google: "Google",
+      discord: "Discord",
+      noAccount: "¿No tienes una cuenta?",
+      signUp: "Regístrate",
+      errors: {
+        invalid: "Credenciales incorrectas. Por favor verifica tu correo y contraseña.",
+        tooMany: "Demasiados intentos fallidos. Intenta de nuevo más tarde.",
+        generic: "Ocurrió un error al iniciar sesión. Intenta nuevamente."
+      }
+    }
+  };
+
+  const t = translations[language.toLowerCase() as 'en' | 'es'];
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,13 +88,13 @@ export default function LoginPage() {
       const errorBody = err as { code?: string };
       console.error("Login error:", err);
       
-      // Manejo de errores específicos de Firebase
+      // Manejo de errores específicos de Firebase con traducción
       if (errorBody.code === 'auth/invalid-credential' || errorBody.code === 'auth/user-not-found' || errorBody.code === 'auth/wrong-password') {
-        setError('Credenciales incorrectas. Por favor verifica tu correo y contraseña.');
+        setError(t.errors.invalid);
       } else if (errorBody.code === 'auth/too-many-requests') {
-        setError('Demasiados intentos fallidos. Intenta de nuevo más tarde.');
+        setError(t.errors.tooMany);
       } else {
-        setError('Ocurrió un error al iniciar sesión. Intenta nuevamente.');
+        setError(t.errors.generic);
       }
     } finally {
       setLoading(false);
@@ -70,6 +124,16 @@ export default function LoginPage() {
         }
       `}</style>
 
+      {/* --- BOTÓN DE CAMBIO DE IDIOMA FLOTANTE --- */}
+      <button
+        onClick={toggleLanguage}
+        className="absolute top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-sm text-gray-300 font-medium transition-all backdrop-blur-md active:scale-95"
+        aria-label="Cambiar idioma"
+      >
+        <Globe size={16} />
+        <span>{language}</span>
+      </button>
+
       {/* Fondo Mesh Gradient Estilo GameLens */}
       <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-purple-600/30 rounded-full blur-[120px] mix-blend-screen animate-pulse" style={{ animationDuration: '4s' }} />
@@ -97,8 +161,8 @@ export default function LoginPage() {
           </div>
           
           <div className="text-center space-y-1">
-            <h1 className="text-3xl font-bold text-white tracking-tight">¡Bienvenido!</h1>
-            <p className="text-gray-400 text-sm">Que bueno verte de nuevo, GameLens te espera</p>
+            <h1 className="text-3xl font-bold text-white tracking-tight">{t.welcomeTitle}</h1>
+            <p className="text-gray-400 text-sm">{t.welcomeSub}</p>
           </div>
         </div>
 
@@ -112,7 +176,7 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="space-y-5">
           {/* Campo Email */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email</label>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">{t.emailLabel}</label>
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Mail size={18} className="text-gray-500 group-focus-within:text-purple-400 transition-colors" />
@@ -121,7 +185,7 @@ export default function LoginPage() {
                 type="email" 
                 required
                 className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-3.5 pl-11 pr-4 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all placeholder:text-gray-600 text-sm"
-                placeholder="usuario@gamelens.com"
+                placeholder={t.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -131,8 +195,8 @@ export default function LoginPage() {
           {/* Campo Contraseña */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center ml-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Contraseña</label>
-                <Link href="#" className="text-xs text-purple-400 hover:text-purple-300 transition-colors">¿Olvidaste tu contraseña?</Link>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t.passwordLabel}</label>
+                <Link href="#" className="text-xs text-purple-400 hover:text-purple-300 transition-colors">{t.forgotPass}</Link>
             </div>
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -142,7 +206,7 @@ export default function LoginPage() {
                 type="password" 
                 required
                 className="w-full bg-black/40 border border-white/10 text-white rounded-xl py-3.5 pl-11 pr-4 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all placeholder:text-gray-600 text-sm"
-                placeholder="••••••••"
+                placeholder={t.passwordPlaceholder}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -158,11 +222,11 @@ export default function LoginPage() {
             {loading ? (
               <>
                 <Loader2 size={20} className="animate-spin" />
-                <span>Iniciando...</span>
+                <span>{t.loadingBtn}</span>
               </>
             ) : (
               <>
-                <span>Iniciar Sesión</span>
+                <span>{t.loginBtn}</span>
                 <ArrowRight size={20} />
               </>
             )}
@@ -174,7 +238,7 @@ export default function LoginPage() {
             <div className="w-full border-t border-white/10"></div>
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-[#121212] px-2 text-gray-500">O continúa con</span>
+            <span className="bg-[#121212] px-2 text-gray-500">{t.orContinue}</span>
           </div>
         </div>
 
@@ -184,21 +248,21 @@ export default function LoginPage() {
                 <svg className="w-4 h-4 group-hover:fill-current" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.013-1.133 8.053-3.24 2.067-2.12 2.64-5.227 2.64-7.84 0-.787-.067-1.467-.187-2.147h-10.51z"/>
                 </svg>
-                Google
+                {t.google}
             </button>
             <button className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/5 text-gray-300 hover:text-white py-2.5 rounded-xl transition-all text-sm font-medium hover:border-white/20 hover:bg-[#5865F2]/20 hover:text-[#5865F2] group">
                 <svg className="w-4 h-4 group-hover:fill-current" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.5328-9.748-1.3751-13.6888a.061.061 0 00-.0303-.0277zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419z"/>
                 </svg>
-                Discord
+                {t.discord}
             </button>
         </div>
 
         {/* Enlace al Registro */}
         <p className="text-center text-sm text-gray-500">
-          ¿No tienes una cuenta?{' '}
+          {t.noAccount}{' '}
           <Link href="/sign-up" className="text-purple-400 font-semibold hover:text-purple-300 transition-colors">
-            Regístrate
+            {t.signUp}
           </Link>
         </p>
 

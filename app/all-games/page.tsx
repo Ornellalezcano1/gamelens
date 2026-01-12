@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { VerticalMenu } from '@/components/VerticalMenu'; 
 import { Heart, Filter, Star, SortAsc, ArrowDown, Gamepad2 } from 'lucide-react';
+// 1. IMPORTAMOS EL CONTEXTO
+import { useLanguage } from '@/app/context/LanguageContext';
 
 // Forzamos a Next.js a tratar la página como dinámica
 export const dynamic = 'force-dynamic';
@@ -40,7 +42,7 @@ const PALETTE = {
   GRIS: '#9CA3AF'
 };
 
-// --- DATOS MOCK ---
+// --- DATOS MOCK (Sin cambios) ---
 const allGames = [
   {
     id: 1,
@@ -260,18 +262,74 @@ const allGames = [
   }
 ];
 
-// Filtros y Tipos
-const FILTERS = ['Todos', 'RPG', 'Acción', 'FPS', 'Estrategia', 'Indie', 'Shooter', 'Mundo Abierto'];
+// 2. DEFINIMOS CLAVES DE FILTRO INTERNAS (EN INGLÉS)
+const FILTER_KEYS = ['All', 'RPG', 'Action', 'FPS', 'Strategy', 'Indie', 'Shooter', 'Open World'];
+
 type SortOption = 'score_desc' | 'score_asc' | 'name';
 
 export default function AllGamesPage() {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Estados de Filtros y Ordenamiento
-  const [activeFilter, setActiveFilter] = useState('Todos');
+  // Estados de Filtros y Ordenamiento (Usa 'All' como valor inicial)
+  const [activeFilter, setActiveFilter] = useState('All');
   const [sortBy, setSortBy] = useState<SortOption>('score_desc');
   const [showSortMenu, setShowSortMenu] = useState(false);
+
+  // 3. HOOK DE IDIOMA
+  const { language } = useLanguage();
+
+  // 4. DICCIONARIO
+  const translations = {
+    en: {
+        loading: 'Loading...',
+        title: 'All Games',
+        subtitle: 'Explore the complete catalog of available games.',
+        results: 'Results',
+        viewDetails: 'View Details',
+        sortTooltip: 'Sort by...',
+        sortOptions: {
+            highScore: 'Highest Score',
+            lowScore: 'Lowest Score',
+            name: 'Name (A-Z)'
+        },
+        filters: {
+            'All': 'All',
+            'RPG': 'RPG',
+            'Action': 'Action',
+            'FPS': 'FPS',
+            'Strategy': 'Strategy',
+            'Indie': 'Indie',
+            'Shooter': 'Shooter',
+            'Open World': 'Open World'
+        }
+    },
+    es: {
+        loading: 'Cargando...',
+        title: 'Todos los Juegos',
+        subtitle: 'Explora el catálogo completo de juegos disponibles.',
+        results: 'Resultados',
+        viewDetails: 'Ver Detalles',
+        sortTooltip: 'Ordenar por...',
+        sortOptions: {
+            highScore: 'Mayor Puntaje',
+            lowScore: 'Menor Puntaje',
+            name: 'Nombre (A-Z)'
+        },
+        filters: {
+            'All': 'Todos',
+            'RPG': 'RPG',
+            'Action': 'Acción',
+            'FPS': 'FPS',
+            'Strategy': 'Estrategia',
+            'Indie': 'Indie',
+            'Shooter': 'Shooter',
+            'Open World': 'Mundo Abierto'
+        }
+    }
+  };
+
+  const t = translations[language.toLowerCase() as 'en' | 'es'];
 
   useEffect(() => {
     // Simulamos la carga del usuario
@@ -284,14 +342,20 @@ export default function AllGamesPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // 5. LÓGICA DE FILTRADO ADAPTADA
+  // Convertimos la clave del filtro (inglés) al valor que está en la base de datos (español)
   const filteredGames = allGames.filter((game) => {
-    if (activeFilter === 'Todos') return true;
-    let searchGenre = activeFilter;
-    if (activeFilter === 'Acción') searchGenre = 'Action';
-    if (activeFilter === 'Estrategia') searchGenre = 'Strategy';
-    if (activeFilter === 'Mundo Abierto') searchGenre = 'Open World';
-    // Busqueda laxa
-    return game.meta.genres.some(g => g.toLowerCase().includes(activeFilter.toLowerCase()) || g.includes(searchGenre));
+    if (activeFilter === 'All') return true;
+    
+    let searchGenre = activeFilter; // Por defecto busca el string tal cual (ej: 'RPG')
+    
+    // Mapeo manual porque tu 'allGames' tiene géneros mezclados o en español
+    if (activeFilter === 'Action') searchGenre = 'Acción';
+    if (activeFilter === 'Strategy') searchGenre = 'Estrategia';
+    if (activeFilter === 'Open World') searchGenre = 'Mundo Abierto';
+    
+    // Buscamos si alguno de los géneros del juego coincide con el filtro
+    return game.meta.genres.some(g => g.includes(searchGenre) || g.includes(activeFilter));
   });
 
   const sortedGames = [...filteredGames].sort((a, b) => {
@@ -302,7 +366,7 @@ export default function AllGamesPage() {
   });
 
   if (loading) {
-    return <div className="h-screen bg-[#131119] flex items-center justify-center text-white">Cargando...</div>;
+    return <div className="h-screen bg-[#131119] flex items-center justify-center text-white">{t.loading}</div>;
   }
 
   // Variable segura para cuando user es null (se usa en el Header)
@@ -366,7 +430,7 @@ export default function AllGamesPage() {
         }
       `}</style>
       
-      {/* ➡️ Header Importado (USANDO safeUser para evitar error de tipos y variable no usada) */}
+      {/* ➡️ Header Importado */}
       <Header user={safeUser} />
       
       <main className="flex-1 px-6 md:px-10 max-w-[1920px] mx-auto w-full relative flex flex-col">
@@ -387,27 +451,28 @@ export default function AllGamesPage() {
                 
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2 font-display tracking-tight">
-                    <Gamepad2 size={24} style={{ color: PALETTE.MORADO }} /> All Games
+                    <Gamepad2 size={24} style={{ color: PALETTE.MORADO }} /> {t.title}
                     <span className="text-xs font-normal text-gray-500 bg-white/5 px-2 py-1 rounded ml-2 font-sans">
-                      {sortedGames.length} Resultados
+                      {sortedGames.length} {t.results}
                     </span>
                   </h2>
-                  <p className="text-gray-400 text-sm">Explora el catálogo completo de juegos disponibles.</p>
+                  <p className="text-gray-400 text-sm">{t.subtitle}</p>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mr-4 max-w-[calc(100vw-4rem)] xl:max-w-none">
-                    {FILTERS.map((filter) => (
+                    {FILTER_KEYS.map((filterKey) => (
                       <button 
-                        key={filter}
-                        onClick={() => setActiveFilter(filter)} 
+                        key={filterKey}
+                        onClick={() => setActiveFilter(filterKey)} 
                         className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                          activeFilter === filter 
+                          activeFilter === filterKey 
                             ? 'bg-white text-black' 
                             : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5' 
                         }`}
                       >
-                        {filter}
+                        {/* Mostramos la etiqueta traducida */}
+                        {t.filters[filterKey as keyof typeof t.filters]}
                       </button>
                     ))}
                   </div>
@@ -418,6 +483,7 @@ export default function AllGamesPage() {
                       className={`p-2 rounded-xl border border-white/5 transition-colors flex items-center gap-2 ${
                           showSortMenu ? 'bg-white text-black' : 'text-gray-400 hover:text-white bg-white/5 hover:bg-white/10'
                       }`}
+                      title={t.sortTooltip}
                     >
                       <Filter size={20} />
                     </button>
@@ -426,13 +492,13 @@ export default function AllGamesPage() {
                       <div className="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right z-50">
                         <div className="p-2 space-y-1">
                           <button onClick={() => { setSortBy('score_desc'); setShowSortMenu(false); }} className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${sortBy === 'score_desc' ? 'bg-blue-600/20 text-blue-400' : 'text-gray-400 hover:bg-white/5'}`}>
-                            <Star size={16} /> <span>Mayor Puntaje</span>
+                            <Star size={16} /> <span>{t.sortOptions.highScore}</span>
                           </button>
                           <button onClick={() => { setSortBy('score_asc'); setShowSortMenu(false); }} className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${sortBy === 'score_asc' ? 'bg-blue-600/20 text-blue-400' : 'text-gray-400 hover:bg-white/5'}`}>
-                            <ArrowDown size={16} /> <span>Menor Puntaje</span>
+                            <ArrowDown size={16} /> <span>{t.sortOptions.lowScore}</span>
                           </button>
                           <button onClick={() => { setSortBy('name'); setShowSortMenu(false); }} className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${sortBy === 'name' ? 'bg-blue-600/20 text-blue-400' : 'text-gray-400 hover:bg-white/5'}`}>
-                            <SortAsc size={16} /> <span>Nombre (A-Z)</span>
+                            <SortAsc size={16} /> <span>{t.sortOptions.name}</span>
                           </button>
                         </div>
                       </div>
@@ -482,7 +548,7 @@ export default function AllGamesPage() {
                       </div>
                     </div>
                     <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-                      <span className="text-xs font-medium text-purple-400 group-hover:text-purple-300 flex items-center gap-1">Ver Detalles</span>
+                      <span className="text-xs font-medium text-purple-400 group-hover:text-purple-300 flex items-center gap-1">{t.viewDetails}</span>
                       <button className="p-1.5 rounded-full text-gray-500 hover:text-pink-500 hover:bg-pink-500/10 hover:[&_svg]:fill-current transition-colors z-20" onClick={(e) => { e.preventDefault(); }}>
                         <Heart size={16} />
                       </button>

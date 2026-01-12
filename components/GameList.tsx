@@ -4,39 +4,90 @@ import { useState } from 'react';
 import { GameBasic } from '@/types';
 import { GameCard } from '@/components/GameCard';
 import { Filter, Star, SortAsc, ArrowDown } from 'lucide-react'; 
+// Importamos el hook de idioma
+import { useLanguage } from '../app/context/LanguageContext';
 
 interface GameListProps {
   games: GameBasic[];
   onGameHover: (game: GameBasic | null) => void;
 }
 
-// Filtros funcionales basados en tus datos
-const FILTERS = ['Todos', 'RPG', 'Acción', 'FPS', 'Estrategia', 'Indie', 'Shooter', 'Mundo Abierto'];
+// DEFINIMOS LAS CLAVES DE FILTRO (Internal IDs)
+// Estas deben coincidir con lo que venga en game.genres (en inglés según tu page.tsx)
+const FILTER_KEYS = ['All', 'RPG', 'Action', 'FPS', 'Strategy', 'Indie', 'Shooter', 'Open World'];
 
-// Actualizamos el tipo para incluir el orden ascendente de score
 type SortOption = 'score_desc' | 'score_asc' | 'name';
 
 export const GameList: React.FC<GameListProps> = ({ games, onGameHover }) => {
-  const [activeFilter, setActiveFilter] = useState('Todos');
-  const [sortBy, setSortBy] = useState<SortOption>('score_desc'); // Por defecto: Mayor puntaje
+  // Estado inicial 'All' para coincidir con la data
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [sortBy, setSortBy] = useState<SortOption>('score_desc'); 
   const [showSortMenu, setShowSortMenu] = useState(false);   
 
-  // 1. Filtrar
+  // 1. OBTENER IDIOMA
+  const { language } = useLanguage();
+
+  // 2. DICCIONARIO DE TRADUCCIONES
+  const translations = {
+    en: {
+      sortTooltip: 'Sort by...',
+      sortOptions: {
+        highScore: 'Highest Score',
+        lowScore: 'Lowest Score',
+        name: 'Name (A-Z)'
+      },
+      // Mapeo de los filtros visuales
+      filters: {
+        'All': 'All',
+        'RPG': 'RPG',
+        'Action': 'Action',
+        'FPS': 'FPS',
+        'Strategy': 'Strategy',
+        'Indie': 'Indie',
+        'Shooter': 'Shooter',
+        'Open World': 'Open World'
+      }
+    },
+    es: {
+      sortTooltip: 'Ordenar por...',
+      sortOptions: {
+        highScore: 'Mayor Puntaje',
+        lowScore: 'Menor Puntaje',
+        name: 'Nombre (A-Z)'
+      },
+      filters: {
+        'All': 'Todos',
+        'RPG': 'RPG',
+        'Action': 'Acción',
+        'FPS': 'FPS',
+        'Strategy': 'Estrategia',
+        'Indie': 'Indie',
+        'Shooter': 'Shooter',
+        'Open World': 'Mundo Abierto'
+      }
+    }
+  };
+
+  const t = translations[language.toLowerCase() as 'en' | 'es'];
+
+  // 3. LOGICA DE FILTRADO
   const filteredGames = games.filter((game) => {
-    if (activeFilter === 'Todos') return true;
+    // Usamos 'All' como comodín universal
+    if (activeFilter === 'All') return true;
+    // Comparamos contra el género en inglés que viene de la data
     return game.genres && game.genres.includes(activeFilter);
   });
 
-  // 2. Ordenar (Sobre la lista ya filtrada)
+  // 4. LOGICA DE ORDENAMIENTO
   const sortedGames = [...filteredGames].sort((a, b) => {
     if (sortBy === 'score_desc') {
-      return b.score - a.score; // Mayor a menor (Descendente)
+      return b.score - a.score; 
     }
     if (sortBy === 'score_asc') {
-      return a.score - b.score; // Menor a mayor (Ascendente)
+      return a.score - b.score; 
     }
     if (sortBy === 'name') {
-      return a.name.localeCompare(b.name); // A-Z
+      return a.name.localeCompare(b.name); 
     }
     return 0;
   });
@@ -45,21 +96,22 @@ export const GameList: React.FC<GameListProps> = ({ games, onGameHover }) => {
     <div className="space-y-6">
       
       {/* Barra de Herramientas */}
-      <div className="flex items-center justify-between relative z-20"> {/* z-20 para que el menú quede encima */}
+      <div className="flex items-center justify-between relative z-20"> 
         
         {/* Chips de Filtros */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide mr-4">
-          {FILTERS.map((filter) => (
+          {FILTER_KEYS.map((filterKey) => (
             <button 
-              key={filter}
-              onClick={() => setActiveFilter(filter)} 
+              key={filterKey}
+              onClick={() => setActiveFilter(filterKey)} 
               className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                activeFilter === filter 
+                activeFilter === filterKey 
                   ? 'bg-white text-black' 
                   : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5' 
               }`}
             >
-              {filter}
+              {/* Aquí mostramos la etiqueta traducida basada en la key */}
+              {t.filters[filterKey as keyof typeof t.filters]}
             </button>
           ))}
         </div>
@@ -71,7 +123,7 @@ export const GameList: React.FC<GameListProps> = ({ games, onGameHover }) => {
             className={`p-2 rounded-xl border border-white/5 transition-colors flex items-center gap-2 ${
                 showSortMenu ? 'bg-white text-black' : 'text-gray-400 hover:text-white bg-white/5 hover:bg-white/10'
             }`}
-            title="Ordenar por..."
+            title={t.sortTooltip}
           >
             <Filter size={20} />
           </button>
@@ -88,10 +140,10 @@ export const GameList: React.FC<GameListProps> = ({ games, onGameHover }) => {
                   }`}
                 >
                   <Star size={16} />
-                  <span>Mayor Puntaje</span>
+                  <span>{t.sortOptions.highScore}</span>
                 </button>
 
-                {/* Opción: Menor Puntaje (NUEVA) */}
+                {/* Opción: Menor Puntaje */}
                 <button
                   onClick={() => { setSortBy('score_asc'); setShowSortMenu(false); }}
                   className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
@@ -99,7 +151,7 @@ export const GameList: React.FC<GameListProps> = ({ games, onGameHover }) => {
                   }`}
                 >
                   <ArrowDown size={16} />
-                  <span>Menor Puntaje</span>
+                  <span>{t.sortOptions.lowScore}</span>
                 </button>
 
                 {/* Opción: Nombre */}
@@ -110,7 +162,7 @@ export const GameList: React.FC<GameListProps> = ({ games, onGameHover }) => {
                   }`}
                 >
                   <SortAsc size={16} />
-                  <span>Nombre (A-Z)</span>
+                  <span>{t.sortOptions.name}</span>
                 </button>
               </div>
             </div>

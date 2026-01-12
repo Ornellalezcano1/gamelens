@@ -5,6 +5,8 @@ import { FeaturedGame } from '@/types';
 import { Activity, ArrowRight, Users, Star, Trophy, LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+// Importamos el hook de idioma
+import { useLanguage } from '../app/context/LanguageContext';
 
 interface HeroBannerProps {
   game: FeaturedGame;
@@ -32,64 +34,114 @@ interface Slide {
 export const HeroBanner: React.FC<HeroBannerProps> = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  
+  // 1. OBTENEMOS EL IDIOMA ACTUAL
+  const { language } = useLanguage();
 
-  // Paleta para referencia:
-  // Cyan: #2DD4E0
-  // Morado: #4530BE
-  // Magenta: #b340bf
-  // Verde: #00FF62
-  // Dorado: #efb537
-  // Rosa: #f6339a
-  // Azul: #50a2ff
+  // 2. DICCIONARIO DE TRADUCCIONES PARA LOS SLIDES
+  const translations = {
+    en: {
+      intro: {
+        title: 'Track Your Data',
+        badge: 'New Tool',
+        desc: 'Level up your gaming experience. Monitor your hours, analyze statistics, and discover trends.',
+        cta: 'Start Tracking'
+      },
+      community: {
+        title: 'Join the Squad',
+        badge: 'Community',
+        desc: 'Connect with thousands of players. Share achievements, find your squad, and compete in unique events.',
+        cta: 'Go to Discord'
+      },
+      pro: {
+        title: 'GameLens Pro',
+        badge: 'Subscription',
+        desc: 'Unlock full potential. Access betas, predictive analytics, and total profile customization.',
+        cta: 'Upgrade Plan'
+      },
+      tournaments: {
+        title: 'Official Tournaments',
+        badge: 'Competitive',
+        desc: 'Show your skill. Join weekly leagues, climb ranks, and earn unique rewards for your victories.',
+        cta: 'View Calendar'
+      }
+    },
+    es: {
+      intro: {
+        title: 'Rastrea tus Datos',
+        badge: 'Nueva Herramienta',
+        desc: 'Lleva tu experiencia de juego al siguiente nivel. Monitoriza tus horas, analiza estadísticas y descubre tendencias.',
+        cta: 'Empezar'
+      },
+      community: {
+        title: 'Únete a la Squad',
+        badge: 'Comunidad',
+        desc: 'Conecta con miles de jugadores. Comparte tus logros, encuentra tu squad y compite en eventos únicos.',
+        cta: 'Ir al Discord'
+      },
+      pro: {
+        title: 'GameLens Pro',
+        badge: 'Suscripción',
+        desc: 'Desbloquea el potencial completo. Acceso a betas, análisis predictivos y personalización total de tu perfil.',
+        cta: 'Mejorar Plan'
+      },
+      tournaments: {
+        title: 'Torneos Oficiales',
+        badge: 'Competitivo',
+        desc: 'Demuestra tu nivel. Participa en ligas semanales, escala rangos y gana recompensas únicas por tus victorias.',
+        cta: 'Ver Calendario'
+      }
+    }
+  };
 
+  // 3. SELECCIONAMOS EL TEXTO SEGÚN EL IDIOMA
+  const t = translations[language.toLowerCase() as 'en' | 'es'];
+
+  // 4. CONSTRUIMOS EL ARRAY DE SLIDES CON LOS TEXTOS DINÁMICOS
+  // Mantenemos los colores, iconos e IDs fijos, solo inyectamos el texto 't'
   const slides: Slide[] = [
     {
       id: 'intro',
       theme: 'brand',
-      title: 'Track Your Data',
-      badge: 'Nueva Herramienta',
-      // Referencia (Longitud Ideal)
-      description: 'Lleva tu experiencia de juego al siguiente nivel. Monitoriza tus horas, analiza estadísticas y descubre tendencias.',
+      title: t.intro.title,
+      badge: t.intro.badge,
+      description: t.intro.desc,
       image: '/Logo_Game.svg',
       bgClass: 'bg-gradient-to-br from-[#4530BE] via-[#131119] to-[#b340bf]',
-      cta: { text: 'Start Tracking', link: '/login', icon: Activity },
+      cta: { text: t.intro.cta, link: '/login', icon: Activity },
       secondary: null
     },
-    // ELIMINADO: Banner de 'featured' (Elden Ring)
     {
       id: 'community',
       theme: 'brand',
-      title: 'Únete a la Squad',
-      badge: 'Comunidad',
-      // Ajustado: Eliminado "apasionados" para cuadrar longitud
-      description: 'Conecta con miles de jugadores. Comparte tus logros, encuentra tu squad y compite en eventos únicos.',
+      title: t.community.title,
+      badge: t.community.badge,
+      description: t.community.desc,
       image: '/Logo_Game.svg',
       bgClass: 'bg-gradient-to-br from-[#2DD4E0]/80 via-[#131119] to-[#00FF62]/80',
-      cta: { text: 'Ir al Discord', link: '/community', icon: Users },
+      cta: { text: t.community.cta, link: '/community', icon: Users },
       secondary: null
     },
     {
       id: 'pro',
       theme: 'brand',
-      title: 'GameLens Pro',
-      badge: 'Suscripción',
-      // Ajustado: Eliminado "de IA" para cuadrar longitud
-      description: 'Desbloquea el potencial completo. Acceso a betas, análisis predictivos y personalización total de tu perfil.',
+      title: t.pro.title,
+      badge: t.pro.badge,
+      description: t.pro.desc,
       image: '/Logo_Game.svg',
       bgClass: 'bg-gradient-to-br from-[#f6339a]/80 via-[#131119] to-[#b340bf]/80',
-      cta: { text: 'Mejorar Plan', link: '/pro', icon: Star },
+      cta: { text: t.pro.cta, link: '/pro', icon: Star },
       secondary: null
     },
     {
       id: 'tournaments',
       theme: 'brand',
-      title: 'Torneos Oficiales',
-      badge: 'Competitivo',
-      // Ajustado: Eliminado "en el campo de batalla" para cuadrar longitud
-      description: 'Demuestra tu nivel. Participa en ligas semanales, escala rangos y gana recompensas únicas por tus victorias.',
+      title: t.tournaments.title,
+      badge: t.tournaments.badge,
+      description: t.tournaments.desc,
       image: '/Logo_Game.svg',
       bgClass: 'bg-gradient-to-br from-[#4530BE]/80 via-[#131119] to-[#50a2ff]/80',
-      cta: { text: 'Ver Calendario', link: '/tournaments', icon: Trophy },
+      cta: { text: t.tournaments.cta, link: '/tournaments', icon: Trophy },
       secondary: null
     }
   ];

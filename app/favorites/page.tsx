@@ -11,6 +11,11 @@ import {
 // 1. IMPORTAMOS LOS COMPONENTES REALES
 import { Header } from '@/components/Header';
 import { VerticalMenu } from '@/components/VerticalMenu';
+// 2. IMPORTAMOS EL CONTEXTO DE IDIOMA
+import { useLanguage } from '@/app/context/LanguageContext';
+
+// Forzamos a Next.js a tratar la página como dinámica
+export const dynamic = 'force-dynamic';
 
 // --- PALETA GAMELENS ---
 const PALETTE = {
@@ -35,7 +40,7 @@ interface UserData {
   favoritePlatform: string;
 }
 
-// --- MOCK DATA ---
+// --- MOCK DATA (GÉNEROS EN ESPAÑOL) ---
 const initialFavorites = [
   {
     id: 1,
@@ -111,16 +116,80 @@ const initialFavorites = [
   }
 ];
 
-const FILTERS = ['Todos', 'RPG', 'Indie', 'Acción', 'Mundo Abierto'];
+// CLAVES DE FILTRO INTERNAS (EN INGLÉS)
+const FILTER_KEYS = ['All', 'RPG', 'Indie', 'Action', 'Open World'];
 type SortOption = 'score_desc' | 'score_asc' | 'name' | 'date_desc';
 
 export default function FavoritesPage() {
   const [user, setUser] = useState<UserData | null>(null);
   const [favorites, setFavorites] = useState(initialFavorites);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('Todos');
+  const [activeFilter, setActiveFilter] = useState('All');
   const [sortBy, setSortBy] = useState<SortOption>('date_desc');
   const [showSortMenu, setShowSortMenu] = useState(false);
+
+  // 3. HOOK DE IDIOMA
+  const { language } = useLanguage();
+
+  // 4. DICCIONARIO
+  const translations = {
+    en: {
+        loading: 'Loading your collection...',
+        title: 'Favorites',
+        subtitle: 'Your personal collection of gems.',
+        results: 'Results',
+        viewDetails: 'View Details',
+        removeTooltip: 'Remove from favorites',
+        sortTooltip: 'Sort by...',
+        sortOptions: {
+            recent: 'Recently Added',
+            highScore: 'Highest Score',
+            name: 'Name (A-Z)'
+        },
+        filters: {
+            'All': 'All',
+            'RPG': 'RPG',
+            'Indie': 'Indie',
+            'Action': 'Action',
+            'Open World': 'Open World'
+        },
+        empty: {
+            title: 'No favorites yet',
+            filterDesc: 'No games found with current filters.',
+            generalDesc: 'Explore the library and bookmark the games you like best.',
+            button: 'Explore Games'
+        }
+    },
+    es: {
+        loading: 'Cargando tu colección...',
+        title: 'Favoritos',
+        subtitle: 'Tu colección personal de joyas.',
+        results: 'Resultados',
+        viewDetails: 'Ver Detalles',
+        removeTooltip: 'Eliminar de favoritos',
+        sortTooltip: 'Ordenar por...',
+        sortOptions: {
+            recent: 'Agregado Reciente',
+            highScore: 'Mayor Puntaje',
+            name: 'Nombre (A-Z)'
+        },
+        filters: {
+            'All': 'Todos',
+            'RPG': 'RPG',
+            'Indie': 'Indie',
+            'Action': 'Acción',
+            'Open World': 'Mundo Abierto'
+        },
+        empty: {
+            title: 'No tienes favoritos aún',
+            filterDesc: 'No se encontraron juegos con los filtros actuales.',
+            generalDesc: 'Explora la biblioteca y marca los juegos que más te gusten.',
+            button: 'Explorar Juegos'
+        }
+    }
+  };
+
+  const t = translations[language.toLowerCase() as 'en' | 'es'];
 
   // Simular carga
   useEffect(() => {
@@ -134,8 +203,14 @@ export default function FavoritesPage() {
 
   // Lógica de Filtrado y Ordenamiento
   const filteredFavorites = favorites.filter(game => {
-    const matchesFilter = activeFilter === 'Todos' || game.genres.some(g => g.includes(activeFilter));
-    return matchesFilter;
+    if (activeFilter === 'All') return true;
+    
+    // Mapeo manual de la Key (Inglés) al Valor en Base de Datos (Español)
+    let searchGenre = activeFilter;
+    if (activeFilter === 'Action') searchGenre = 'Acción';
+    if (activeFilter === 'Open World') searchGenre = 'Mundo Abierto';
+
+    return game.genres.some(g => g.includes(searchGenre) || g.includes(activeFilter));
   }).sort((a, b) => {
     if (sortBy === 'score_desc') return b.score - a.score;
     if (sortBy === 'score_asc') return a.score - b.score;
@@ -151,7 +226,7 @@ export default function FavoritesPage() {
   };
 
   if (loading) {
-    return <div className="h-screen bg-[#131119] flex items-center justify-center text-white">Cargando tu colección...</div>;
+    return <div className="h-screen bg-[#131119] flex items-center justify-center text-white">{t.loading}</div>;
   }
 
   // Usuario seguro para el Header
@@ -231,37 +306,37 @@ export default function FavoritesPage() {
           {/* Se añade animate-fade-up para la animación de entrada */}
           <div className="flex-1 w-full min-w-0 space-y-8 flex flex-col pt-6 md:pt-10 pb-10 animate-fade-up">
             
-            {/* Header Sticky con Filtros (Exactamente igual a All Games) */}
+            {/* Header Sticky con Filtros */}
             <div className="sticky top-[73px] z-40 bg-[#131119] pt-2 pb-6 -mt-2 border-b border-white/5 md:border-none">
               <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 relative">
                 
                 {/* Título */}
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2 font-display tracking-tight">
-                    <Heart size={24} style={{ color: PALETTE.ROSA, fill: PALETTE.ROSA }} /> Favoritos
+                    <Heart size={24} style={{ color: PALETTE.ROSA, fill: PALETTE.ROSA }} /> {t.title}
                     <span className="text-xs font-normal text-gray-500 bg-white/5 px-2 py-1 rounded ml-2 font-sans">
-                      {filteredFavorites.length} Resultados
+                      {filteredFavorites.length} {t.results}
                     </span>
                   </h2>
-                  <p className="text-gray-400 text-sm">Tu colección personal de joyas.</p>
+                  <p className="text-gray-400 text-sm">{t.subtitle}</p>
                 </div>
 
-                {/* Filtros y Ordenamiento (Estructura idéntica a All Games) */}
+                {/* Filtros y Ordenamiento */}
                 <div className="flex items-center gap-3">
                   
-                  {/* Scroll Container para móvil: max-w-[calc(100vw-4rem)] */}
+                  {/* Scroll Container para móvil */}
                   <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mr-4 max-w-[calc(100vw-4rem)] xl:max-w-none">
-                    {FILTERS.map((filter) => (
+                    {FILTER_KEYS.map((filterKey) => (
                       <button 
-                        key={filter}
-                        onClick={() => setActiveFilter(filter)} 
+                        key={filterKey}
+                        onClick={() => setActiveFilter(filterKey)} 
                         className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                          activeFilter === filter 
+                          activeFilter === filterKey 
                             ? 'bg-white text-black' 
                             : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5' 
                         }`}
                       >
-                        {filter}
+                        {t.filters[filterKey as keyof typeof t.filters]}
                       </button>
                     ))}
                   </div>
@@ -272,6 +347,7 @@ export default function FavoritesPage() {
                       className={`p-2 rounded-xl border border-white/5 transition-colors flex items-center gap-2 ${
                           showSortMenu ? 'bg-white text-black' : 'text-gray-400 hover:text-white bg-white/5 hover:bg-white/10'
                       }`}
+                      title={t.sortTooltip}
                     >
                       <Filter size={20} />
                     </button>
@@ -280,13 +356,13 @@ export default function FavoritesPage() {
                       <div className="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right z-50">
                         <div className="p-2 space-y-1">
                           <button onClick={() => { setSortBy('date_desc'); setShowSortMenu(false); }} className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${sortBy === 'date_desc' ? 'bg-pink-600/20 text-pink-400' : 'text-gray-400 hover:bg-white/5'}`}>
-                            <Calendar size={16} /> <span>Agregado Reciente</span>
+                            <Calendar size={16} /> <span>{t.sortOptions.recent}</span>
                           </button>
                           <button onClick={() => { setSortBy('score_desc'); setShowSortMenu(false); }} className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${sortBy === 'score_desc' ? 'bg-pink-600/20 text-pink-400' : 'text-gray-400 hover:bg-white/5'}`}>
-                            <Star size={16} /> <span>Mayor Puntaje</span>
+                            <Star size={16} /> <span>{t.sortOptions.highScore}</span>
                           </button>
                           <button onClick={() => { setSortBy('name'); setShowSortMenu(false); }} className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${sortBy === 'name' ? 'bg-pink-600/20 text-pink-400' : 'text-gray-400 hover:bg-white/5'}`}>
-                            <SortAsc size={16} /> <span>Nombre (A-Z)</span>
+                            <SortAsc size={16} /> <span>{t.sortOptions.name}</span>
                           </button>
                         </div>
                       </div>
@@ -337,16 +413,20 @@ export default function FavoritesPage() {
                                     <div className="flex items-center gap-2 text-gray-400" title={`Agregado el ${game.addedDate}`}>
                                         <Calendar size={12} className="text-gray-500" />
                                         <span className="text-xs font-medium">
-                                            {new Date(game.addedDate).toLocaleDateString(undefined, {month:'short', day:'numeric'})}
+                                            {/* Formato de fecha localizado según idioma */}
+                                            {new Date(game.addedDate).toLocaleDateString(
+                                                language === 'EN' ? 'en-US' : 'es-ES', 
+                                                {month:'short', day:'numeric'}
+                                            )}
                                         </span>
                                     </div>
                                 </div>
                                 <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-                                    <span className="text-xs font-medium text-pink-400 group-hover:text-pink-300 flex items-center gap-1">Ver Detalles</span>
+                                    <span className="text-xs font-medium text-pink-400 group-hover:text-pink-300 flex items-center gap-1">{t.viewDetails}</span>
                                     <button 
                                         onClick={(e) => handleRemoveFavorite(e, game.id)}
                                         className="p-1.5 rounded-full text-gray-500 hover:text-white hover:bg-red-500/80 transition-colors z-20"
-                                        title="Eliminar de favoritos"
+                                        title={t.removeTooltip}
                                     >
                                         <Trash2 size={16} />
                                     </button>
@@ -356,23 +436,23 @@ export default function FavoritesPage() {
                     ))}
                 </div>
             ) : (
-                // Empty State
+                // Empty State Traducido
                 <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-white/5 rounded-3xl bg-[#1A1A20]/30">
                     <div className="w-20 h-20 bg-neutral-800/50 rounded-full flex items-center justify-center mb-6">
                         <Heart size={40} className="text-gray-600" />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">No tienes favoritos aún</h3>
+                    <h3 className="text-2xl font-bold text-white mb-2">{t.empty.title}</h3>
                     <p className="text-gray-400 max-w-md mb-8">
-                        {activeFilter !== 'Todos' 
-                            ? "No se encontraron juegos con los filtros actuales." 
-                            : "Explora la biblioteca y marca los juegos que más te gusten."}
+                        {activeFilter !== 'All' 
+                            ? t.empty.filterDesc
+                            : t.empty.generalDesc}
                     </p>
                     <Link 
                         href="/all-games" 
                         className="flex items-center gap-2 px-8 py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-all shadow-lg hover:shadow-white/10 no-underline"
                     >
                         <Gamepad2 size={20} />
-                        Explorar Juegos
+                        {t.empty.button}
                     </Link>
                 </div>
             )}

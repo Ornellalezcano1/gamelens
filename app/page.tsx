@@ -24,7 +24,6 @@ async function getHomeData(): Promise<HomeData> {
   } catch {
     // ESTO EVITA EL ERROR EN VERCEL Y TYPESCRIPT: 
     // Ajustamos el fallback para que cumpla exactamente con la interfaz HomeData
-    // Corregimos 'rating' para que sea el objeto detallado que requiere el tipo FeaturedGame.
     console.error('Error en fetch, cargando datos de respaldo...');
     
     const fallbackGame = {
@@ -50,7 +49,8 @@ async function getHomeData(): Promise<HomeData> {
       activity24hTimeline: Array(24).fill(500),
       // Mantenemos estas propiedades por compatibilidad con el componente Dashboard
       images: { cover: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/library_600x900.jpg" },
-      meta: { genres: ["RPG", "Acción"] },
+      // CAMBIO: "Action" en inglés para respetar el estado inicial
+      meta: { genres: ["RPG", "Action"] },
       kpiSeries: { score: 96, currentPlayers: 240000 }
     };
 
@@ -86,7 +86,7 @@ async function getHomeData(): Promise<HomeData> {
           kpiSeries: { score: 86, currentPlayers: 60000 }
         }
       ]
-    } as unknown as HomeData; // Usamos unknown temporalmente para asegurar la compatibilidad total durante la conversión
+    } as unknown as HomeData; // Usamos unknown temporalmente para asegurar la compatibilidad total
   }
 }
 

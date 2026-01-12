@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { VerticalMenu } from '@/components/VerticalMenu'; 
 import { TrendingUp, TrendingDown, Minus, Calendar, Star } from 'lucide-react';
+// 1. IMPORTAR CONTEXTO
+import { useLanguage } from '@/app/context/LanguageContext';
 
 // Forzamos a Next.js a tratar la página como dinámica
 export const dynamic = 'force-dynamic';
@@ -206,6 +208,39 @@ export default function TopSellingPage() {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 2. OBTENER IDIOMA
+  const { language } = useLanguage();
+
+  // 3. DICCIONARIO
+  const translations = {
+    en: {
+        loading: 'Loading...',
+        title: 'Top Selling',
+        colRank: 'Rank',
+        colGame: 'Game',
+        colPrice: 'Price',
+        colRating: 'Rating',
+        colChange: 'Change',
+        colWeeks: 'Weeks',
+        free: 'Free',
+        weeksAbbr: 'wks.'
+    },
+    es: {
+        loading: 'Cargando...',
+        title: 'Más Vendidos',
+        colRank: 'Rank',
+        colGame: 'Juego',
+        colPrice: 'Precio',
+        colRating: 'Calif.',
+        colChange: 'Cambio',
+        colWeeks: 'Semanas',
+        free: 'Gratis',
+        weeksAbbr: 'sem.'
+    }
+  };
+
+  const t = translations[language.toLowerCase() as 'en' | 'es'];
+
   useEffect(() => {
     // Simulamos carga de usuario
     const mockUser = { name: 'Valentín', favoritePlatform: 'PC', avatarUrl: '' };
@@ -217,7 +252,7 @@ export default function TopSellingPage() {
   }, []);
 
   if (loading) {
-    return <div className="h-screen bg-[#131119] flex items-center justify-center text-white">Cargando...</div>;
+    return <div className="h-screen bg-[#131119] flex items-center justify-center text-white">{t.loading}</div>;
   }
 
   // Objeto de usuario seguro para pasar al Header
@@ -305,7 +340,7 @@ export default function TopSellingPage() {
             {/* Page Header (Consistente con Most Played, color VERDE) */}
             <div className="mb-2">
               <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2 font-display tracking-tight">
-                <TrendingUp size={24} style={{ color: PALETTE.VERDE }} /> Top Selling
+                <TrendingUp size={24} style={{ color: PALETTE.VERDE }} /> {t.title}
               </h2>
             </div>
 
@@ -315,12 +350,12 @@ export default function TopSellingPage() {
                 {/* Encabezado de la tabla */}
                 {/* Distribución 12 columnas: Rank(1) + Juego(4) + Precio(2) + Rating(1) + Cambio(2) + Semanas(2) */}
                 <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-white/5 bg-white/5 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    <div className="col-span-2 md:col-span-1 text-left">Rank</div>
-                    <div className="col-span-6 md:col-span-4">Juego</div>
-                    <div className="col-span-2 text-left hidden md:block">Precio</div>
-                    <div className="col-span-1 text-center hidden md:block">Rating</div>
-                    <div className="col-span-2 text-right hidden md:block">Cambio</div>
-                    <div className="col-span-3 md:col-span-2 text-right">Semanas</div>
+                    <div className="col-span-2 md:col-span-1 text-left">{t.colRank}</div>
+                    <div className="col-span-6 md:col-span-4">{t.colGame}</div>
+                    <div className="col-span-2 text-left hidden md:block">{t.colPrice}</div>
+                    <div className="col-span-1 text-center hidden md:block">{t.colRating}</div>
+                    <div className="col-span-2 text-right hidden md:block">{t.colChange}</div>
+                    <div className="col-span-3 md:col-span-2 text-right">{t.colWeeks}</div>
                 </div>
 
                 {/* Filas */}
@@ -354,7 +389,7 @@ export default function TopSellingPage() {
                                     <p className="text-xs text-gray-500 truncate">{game.publisher}</p>
                                     {/* Mobile: Mostrar Precio brevemente */}
                                     <div className="flex items-center gap-1 text-[10px] text-green-400 mt-1 md:hidden">
-                                        {game.price === 0 ? "Free" : formatPrice(game.price)}
+                                        {game.price === 0 ? t.free : formatPrice(game.price)}
                                     </div>
                                 </div>
                             </div>
@@ -362,7 +397,7 @@ export default function TopSellingPage() {
                             {/* PRECIO (Desktop) */}
                             <div className="col-span-2 hidden md:block text-left">
                                 {game.price === 0 ? (
-                                    <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs font-bold rounded uppercase border border-green-500/20">Free</span>
+                                    <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs font-bold rounded uppercase border border-green-500/20">{t.free}</span>
                                 ) : (
                                     <span className="text-gray-300 font-medium tabular-nums">{formatPrice(game.price)}</span>
                                 )}
@@ -393,7 +428,7 @@ export default function TopSellingPage() {
                             <div className="col-span-3 md:col-span-2 flex flex-col items-end justify-center">
                                 <div className="flex items-center gap-2 text-gray-400 text-sm font-medium tabular-nums">
                                     <Calendar size={14} className="text-purple-400" />
-                                    <span>{game.weeksOnChart} sem.</span>
+                                    <span>{game.weeksOnChart} {t.weeksAbbr}</span>
                                 </div>
                             </div>
 

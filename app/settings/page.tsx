@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { VerticalMenu } from '@/components/VerticalMenu';
 import { Header } from '@/components/Header';
+// 1. IMPORTAR CONTEXTO
+import { useLanguage } from '@/app/context/LanguageContext';
 
 // --- PALETA GAMELENS ---
 const PALETTE = {
@@ -91,6 +93,127 @@ export default function SettingsPage() {
     marketingEmails: false
   });
 
+  // 2. HOOK DE IDIOMA
+  const { language } = useLanguage();
+
+  // 3. DICCIONARIO
+  const translations = {
+    en: {
+        loading: 'Loading settings...',
+        title: 'Settings',
+        subtitle: 'Manage your account, connections, and GameLens preferences.',
+        save: 'Save Changes',
+        // Tabs
+        tabs: {
+            account: 'Account',
+            connections: 'Connections',
+            privacy: 'Privacy',
+            notifications: 'Notifications'
+        },
+        // Account Section
+        accountInfo: 'Account Information',
+        displayName: 'Display Name',
+        displayNameDesc: 'This is the name your friends will see.',
+        username: 'Username (ID)',
+        usernameDesc: 'Unique identifier. Used for mentions and URLs.',
+        email: 'Email',
+        langLabel: 'Language',
+        // Security Section
+        security: 'Security',
+        // CORRECCIÓN AQUÍ: Renombrado de 2fa a twoFA para evitar error de sintaxis
+        twoFA: 'Two-Factor Authentication (2FA)',
+        twoFADesc: 'Add an extra layer of security.',
+        password: 'Password',
+        lastChanged: 'Last changed 3 months ago',
+        changeBtn: 'Change',
+        dangerZone: 'Danger Zone',
+        dangerDesc: 'These actions are irreversible. Be careful.',
+        deleteAccount: 'Delete Account',
+        logoutAll: 'Log Out Everywhere',
+        // Connections Section
+        connectedPlat: 'Connected Platforms',
+        connectedDesc: 'Sync your games, achievements, and activity by connecting your accounts.',
+        connectedAs: 'Connected as',
+        notConnected: 'Not connected',
+        disconnect: 'Disconnect',
+        connect: 'Connect',
+        // Privacy Section
+        privacyVis: 'Privacy & Visibility',
+        publicProfile: 'Public Profile',
+        publicDesc: 'Anyone can see your profile and stats.',
+        showActivity: 'Show Game Activity',
+        showActivityDesc: 'Shows what you are playing in real-time.',
+        friendReq: 'Allow Friend Requests',
+        friendReqDesc: 'Users can send you invitations.',
+        // Notifications Section
+        notifPref: 'Notification Preferences',
+        emails: 'Emails',
+        emailsDesc: 'Weekly digest, security, and support.',
+        push: 'Push Notifications',
+        pushDesc: 'Real-time alerts on your device.',
+        news: 'News & Offers',
+        newsDesc: 'News about games on your wishlist.'
+    },
+    es: {
+        loading: 'Cargando configuración...',
+        title: 'Configuración',
+        subtitle: 'Administra tu cuenta, conexiones y preferencias de GameLens.',
+        save: 'Guardar Cambios',
+        // Tabs
+        tabs: {
+            account: 'Cuenta',
+            connections: 'Conexiones',
+            privacy: 'Privacidad',
+            notifications: 'Notificaciones'
+        },
+        // Account Section
+        accountInfo: 'Información de la Cuenta',
+        displayName: 'Nombre Visible',
+        displayNameDesc: 'Este es el nombre que verán tus amigos.',
+        username: 'Nombre de Usuario (ID)',
+        usernameDesc: 'Identificador único. Se usa para menciones y URLs.',
+        email: 'Correo Electrónico',
+        langLabel: 'Idioma',
+        // Security Section
+        security: 'Seguridad',
+        // CORRECCIÓN AQUÍ: Renombrado de 2fa a twoFA
+        twoFA: 'Autenticación de dos pasos (2FA)',
+        twoFADesc: 'Añade una capa extra de seguridad.',
+        password: 'Contraseña',
+        lastChanged: 'Último cambio hace 3 meses',
+        changeBtn: 'Cambiar',
+        dangerZone: 'Zona de Peligro',
+        dangerDesc: 'Estas acciones son irreversibles. Ten cuidado.',
+        deleteAccount: 'Eliminar Cuenta',
+        logoutAll: 'Cerrar Sesión en todos lados',
+        // Connections Section
+        connectedPlat: 'Plataformas Conectadas',
+        connectedDesc: 'Sincroniza tus juegos, logros y actividad conectando tus cuentas.',
+        connectedAs: 'Conectado como',
+        notConnected: 'No conectado',
+        disconnect: 'Desconectar',
+        connect: 'Conectar',
+        // Privacy Section
+        privacyVis: 'Privacidad y Visibilidad',
+        publicProfile: 'Perfil Público',
+        publicDesc: 'Cualquier persona puede ver tu perfil y estadísticas.',
+        showActivity: 'Mostrar Actividad de Juego',
+        showActivityDesc: 'Muestra qué estás jugando en tiempo real.',
+        friendReq: 'Permitir Solicitudes de Amistad',
+        friendReqDesc: 'Los usuarios pueden enviarte invitaciones.',
+        // Notifications Section
+        notifPref: 'Preferencias de Notificaciones',
+        emails: 'Correos Electrónicos',
+        emailsDesc: 'Resumen semanal, seguridad y soporte.',
+        push: 'Notificaciones Push',
+        pushDesc: 'Alertas en tiempo real en tu dispositivo.',
+        news: 'Novedades y Ofertas',
+        newsDesc: 'Noticias sobre juegos en tu wishlist.'
+    }
+  };
+
+  const t = translations[language.toLowerCase() as 'en' | 'es'];
+
   // --- ESTADOS DE CONEXIONES ---
   const [connections, setConnections] = useState<Connection[]>([
     { 
@@ -149,7 +272,7 @@ export default function SettingsPage() {
   };
 
   if (loading) {
-    return <div className="h-screen flex items-center justify-center text-white bg-[#131119]">Cargando configuración...</div>;
+    return <div className="h-screen flex items-center justify-center text-white bg-[#131119]">{t.loading}</div>;
   }
 
   const safeUser = user || { name: 'Guest', favoritePlatform: 'PC', avatarUrl: '' };
@@ -162,14 +285,14 @@ export default function SettingsPage() {
             {/* Sección Información Pública */}
             <div className="bg-[#1A1A20] border border-white/5 rounded-2xl p-6 md:p-8">
               <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                <User size={20} className="text-blue-500" /> Información de la Cuenta
+                <User size={20} className="text-blue-500" /> {t.accountInfo}
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 {/* 1. Nombre Visible */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">Nombre Visible</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">{t.displayName}</label>
                   <input 
                     type="text" 
                     value={formData.displayName}
@@ -177,15 +300,15 @@ export default function SettingsPage() {
                     placeholder="Tu nombre público"
                     className="w-full bg-[#131119] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 hover:border-white/30 transition-all"
                   />
-                  <p className="text-[11px] text-gray-500 ml-1">Este es el nombre que verán tus amigos.</p>
+                  <p className="text-[11px] text-gray-500 ml-1">{t.displayNameDesc}</p>
                 </div>
 
                 {/* 2. Nombre de Usuario Único (@) */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">Nombre de Usuario (ID)</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">{t.username}</label>
                   <div className="relative group">
-                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold group-focus-within:text-blue-500 transition-colors">@</span>
-                     <input 
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold group-focus-within:text-blue-500 transition-colors">@</span>
+                      <input 
                       type="text" 
                       value={formData.username}
                       onChange={(e) => setFormData({...formData, username: e.target.value.toLowerCase().replace(/\s/g, '')})}
@@ -193,15 +316,15 @@ export default function SettingsPage() {
                       className="w-full bg-[#131119] border border-white/10 rounded-xl pl-8 pr-4 py-3 text-white focus:outline-none focus:border-blue-500/50 hover:border-white/30 transition-all font-mono"
                     />
                   </div>
-                  <p className="text-[11px] text-gray-500 ml-1">Identificador único. Se usa para menciones y URLs.</p>
+                  <p className="text-[11px] text-gray-500 ml-1">{t.usernameDesc}</p>
                 </div>
 
                 {/* 3. Email */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">Correo Electrónico</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">{t.email}</label>
                   <div className="relative">
-                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-                     <input 
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                      <input 
                       type="email" 
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -212,7 +335,7 @@ export default function SettingsPage() {
 
                 {/* 4. Idioma */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">Idioma</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide ml-1">{t.langLabel}</label>
                   <select 
                     value={formData.language}
                     onChange={(e) => setFormData({...formData, language: e.target.value})}
@@ -239,7 +362,7 @@ export default function SettingsPage() {
             {/* Sección Seguridad */}
             <div className="bg-[#1A1A20] border border-white/5 rounded-2xl p-6 md:p-8">
               <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                <Shield size={20} className="text-green-500" /> Seguridad
+                <Shield size={20} className="text-green-500" /> {t.security}
               </h3>
               <div className="space-y-6">
                 {/* 2FA: Stack en móvil para evitar desborde */}
@@ -249,8 +372,9 @@ export default function SettingsPage() {
                       <Lock size={20} />
                     </div>
                     <div>
-                      <p className="font-bold text-white">Autenticación de dos pasos (2FA)</p>
-                      <p className="text-sm text-gray-500">Añade una capa extra de seguridad.</p>
+                      {/* CORRECCIÓN: Uso de t.twoFA en lugar de t.2fa */}
+                      <p className="font-bold text-white">{t.twoFA}</p>
+                      <p className="text-sm text-gray-500">{t.twoFADesc}</p>
                     </div>
                   </div>
                   <div className="self-end sm:self-center">
@@ -260,11 +384,11 @@ export default function SettingsPage() {
                 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-white/5 pt-4 gap-4">
                   <div className="space-y-1">
-                    <p className="font-bold text-white">Contraseña</p>
-                    <p className="text-sm text-gray-500">Último cambio hace 3 meses</p>
+                    <p className="font-bold text-white">{t.password}</p>
+                    <p className="text-sm text-gray-500">{t.lastChanged}</p>
                   </div>
                   <button className="w-full sm:w-auto px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-bold rounded-lg border border-white/10 hover:border-white/30 transition-all">
-                    Cambiar
+                    {t.changeBtn}
                   </button>
                 </div>
               </div>
@@ -273,16 +397,16 @@ export default function SettingsPage() {
              {/* Zona de Peligro */}
              <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-6 md:p-8 hover:bg-red-500/10 transition-colors duration-300">
               <h3 className="text-xl font-bold text-red-500 mb-2 flex items-center gap-2">
-                <AlertTriangle size={20} /> Zona de Peligro
+                <AlertTriangle size={20} /> {t.dangerZone}
               </h3>
-              <p className="text-gray-400 text-sm mb-6">Estas acciones son irreversibles. Ten cuidado.</p>
+              <p className="text-gray-400 text-sm mb-6">{t.dangerDesc}</p>
               <div className="flex flex-col sm:flex-row gap-4">
-                 <button className="w-full sm:w-auto px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold text-sm rounded-xl border border-red-500/20 hover:border-red-500/40 transition-all text-center">
-                   Eliminar Cuenta
-                 </button>
-                 <button className="w-full sm:w-auto px-5 py-2.5 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2">
-                    <LogOut size={16} /> Cerrar Sesión en todos lados
-                 </button>
+                  <button className="w-full sm:w-auto px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold text-sm rounded-xl border border-red-500/20 hover:border-red-500/40 transition-all text-center">
+                    {t.deleteAccount}
+                  </button>
+                  <button className="w-full sm:w-auto px-5 py-2.5 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2">
+                     <LogOut size={16} /> {t.logoutAll}
+                  </button>
               </div>
             </div>
           </div>
@@ -294,9 +418,9 @@ export default function SettingsPage() {
             <div className="bg-[#1A1A20] border border-white/5 rounded-2xl p-6 md:p-8">
                <div className="mb-8">
                   <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                      <Globe size={20} className="text-green-500" /> Plataformas Conectadas
+                      <Globe size={20} className="text-green-500" /> {t.connectedPlat}
                   </h3>
-                  <p className="text-gray-400">Sincroniza tus juegos, logros y actividad conectando tus cuentas.</p>
+                  <p className="text-gray-400">{t.connectedDesc}</p>
                </div>
 
                <div className="grid grid-cols-1 gap-4">
@@ -334,10 +458,10 @@ export default function SettingsPage() {
                                 {conn.connected ? (
                                     <div className="flex items-center gap-2 mt-0.5">
                                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" />
-                                        <p className="text-sm text-gray-300 font-medium truncate">Conectado como <span className="text-white">{conn.user}</span></p>
+                                        <p className="text-sm text-gray-300 font-medium truncate">{t.connectedAs} <span className="text-white">{conn.user}</span></p>
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-gray-500 mt-0.5">No conectado</p>
+                                    <p className="text-sm text-gray-500 mt-0.5">{t.notConnected}</p>
                                 )}
                             </div>
                         </div>
@@ -350,7 +474,7 @@ export default function SettingsPage() {
                                 : 'bg-white text-black hover:bg-gray-200 shadow-lg hover:scale-105 active:scale-95'
                             }`}
                         >
-                            {conn.connected ? 'Desconectar' : 'Conectar'}
+                            {conn.connected ? t.disconnect : t.connect}
                         </button>
                     </div>
                   ))}
@@ -364,14 +488,14 @@ export default function SettingsPage() {
           <div className="space-y-6 animate-fadeIn">
              <div className="bg-[#1A1A20] border border-white/5 rounded-2xl p-6 md:p-8">
                 <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <Eye size={20} className="text-purple-500" /> Privacidad y Visibilidad
+                    <Eye size={20} className="text-purple-500" /> {t.privacyVis}
                 </h3>
                 
                 <div className="space-y-6">
                     {[
-                        { label: "Perfil Público", desc: "Cualquier persona puede ver tu perfil y estadísticas.", state: formData.publicProfile, key: 'publicProfile' },
-                        { label: "Mostrar Actividad de Juego", desc: "Muestra qué estás jugando en tiempo real.", state: formData.showActivity, key: 'showActivity' },
-                        { label: "Permitir Solicitudes de Amistad", desc: "Los usuarios pueden enviarte invitaciones.", state: formData.allowFriendRequests, key: 'allowFriendRequests' },
+                        { label: t.publicProfile, desc: t.publicDesc, state: formData.publicProfile, key: 'publicProfile' },
+                        { label: t.showActivity, desc: t.showActivityDesc, state: formData.showActivity, key: 'showActivity' },
+                        { label: t.friendReq, desc: t.friendReqDesc, state: formData.allowFriendRequests, key: 'allowFriendRequests' },
                     ].map((item, i) => (
                         <div key={i} className="p-4 rounded-xl bg-[#131119] border border-white/5 flex items-center justify-between hover:border-purple-500/30 hover:bg-[#1A1A20] transition-all duration-300 gap-4">
                              <div className="flex-1 min-w-0">
@@ -393,7 +517,7 @@ export default function SettingsPage() {
           <div className="space-y-6 animate-fadeIn">
               <div className="bg-[#1A1A20] border border-white/5 rounded-2xl p-6 md:p-8">
                 <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <Bell size={20} className="text-yellow-500" /> Preferencias de Notificaciones
+                    <Bell size={20} className="text-yellow-500" /> {t.notifPref}
                 </h3>
                 
                 <div className="space-y-6">
@@ -401,8 +525,8 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-4 flex-1 min-w-0">
                              <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500 shrink-0"><Mail size={20}/></div>
                              <div>
-                                <p className="font-bold text-white">Correos Electrónicos</p>
-                                <p className="text-sm text-gray-500">Resumen semanal, seguridad y soporte.</p>
+                                <p className="font-bold text-white">{t.emails}</p>
+                                <p className="text-sm text-gray-500">{t.emailsDesc}</p>
                              </div>
                         </div>
                         <div className="shrink-0">
@@ -414,8 +538,8 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-4 flex-1 min-w-0">
                              <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500 shrink-0"><Smartphone size={20}/></div>
                              <div>
-                                <p className="font-bold text-white">Notificaciones Push</p>
-                                <p className="text-sm text-gray-500">Alertas en tiempo real en tu dispositivo.</p>
+                                <p className="font-bold text-white">{t.push}</p>
+                                <p className="text-sm text-gray-500">{t.pushDesc}</p>
                              </div>
                         </div>
                         <div className="shrink-0">
@@ -427,8 +551,8 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-4 flex-1 min-w-0">
                              <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-500 shrink-0"><Gamepad2 size={20}/></div>
                              <div>
-                                <p className="font-bold text-white">Novedades y Ofertas</p>
-                                <p className="text-sm text-gray-500">Noticias sobre juegos en tu wishlist.</p>
+                                <p className="font-bold text-white">{t.news}</p>
+                                <p className="text-sm text-gray-500">{t.newsDesc}</p>
                              </div>
                         </div>
                         <div className="shrink-0">
@@ -486,22 +610,22 @@ export default function SettingsPage() {
             {/* Header de la Página - CENTRADO EN MÓVIL */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-4 text-center md:text-left">
                 <div>
-                    <h2 className="text-2xl font-bold text-white mb-1 tracking-tight">Configuración</h2>
-                    <p className="text-gray-400 text-sm">Administra tu cuenta, conexiones y preferencias de GameLens.</p>
+                    <h2 className="text-2xl font-bold text-white mb-1 tracking-tight">{t.title}</h2>
+                    <p className="text-gray-400 text-sm">{t.subtitle}</p>
                 </div>
                 <button className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-all duration-300 shadow-lg shadow-white/5 hover:scale-105 active:scale-95">
                     <Save size={18} />
-                    Guardar Cambios
+                    {t.save}
                 </button>
             </div>
 
             {/* Navegación por Pestañas */}
             <div className="flex overflow-x-auto no-scrollbar border-b border-white/10 gap-8">
                 {[
-                    { id: 'account', label: 'Cuenta', icon: User },
-                    { id: 'connections', label: 'Conexiones', icon: Globe },
-                    { id: 'privacy', label: 'Privacidad', icon: Shield },
-                    { id: 'notifications', label: 'Notificaciones', icon: Bell },
+                    { id: 'account', label: t.tabs.account, icon: User },
+                    { id: 'connections', label: t.tabs.connections, icon: Globe },
+                    { id: 'privacy', label: t.tabs.privacy, icon: Shield },
+                    { id: 'notifications', label: t.tabs.notifications, icon: Bell },
                 ].map((tab) => {
                     const isActive = activeTab === tab.id;
                     let activeColor = 'text-blue-500';

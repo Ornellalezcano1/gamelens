@@ -14,10 +14,12 @@ import {
   LogOut 
 } from 'lucide-react';
 import Link from 'next/link';
+// CONEXIÓN AL CONTEXTO
+import { useLanguage } from '../app/context/LanguageContext';
 
-// --- MOCK AUTH (Borrar en producción) ---
+// --- MOCK AUTH ---
 const signOut = async () => console.log('Cerrando sesión...');
-// ---------------------------------------
+// -----------------
 
 interface VerticalMenuProps {
   activeItem?: string; 
@@ -28,6 +30,45 @@ interface VerticalMenuProps {
 export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
   const router = useRouter(); 
   const pathname = usePathname(); 
+
+  // 1. OBTENEMOS EL IDIOMA ACTUAL DEL CONTEXTO
+  const { language } = useLanguage();
+
+  const translations = {
+    en: {
+      mainMenu: 'Main Menu',
+      home: 'Home',
+      allGames: 'All Games',
+      topSelling: 'Top-Selling',
+      mostPlayed: 'Most Played',
+      collection: 'Your Collection',
+      favorites: 'Favorites',
+      profile: 'Profile',
+      settings: 'Settings',
+      logout: 'Log Out',
+      proTitle: 'GameLens Pro',
+      proDesc: 'Access advanced metrics and export reports.',
+      upgrade: 'Upgrade Plan'
+    },
+    es: {
+      mainMenu: 'Menú Principal',
+      home: 'Inicio',
+      allGames: 'Todos los Juegos',
+      topSelling: 'Más Vendidos',
+      mostPlayed: 'Más Jugados',
+      collection: 'Tu Colección',
+      favorites: 'Favoritos',
+      profile: 'Perfil',
+      settings: 'Ajustes',
+      logout: 'Cerrar Sesión',
+      proTitle: 'GameLens Pro',
+      proDesc: 'Accede a métricas avanzadas y exporta reportes.',
+      upgrade: 'Mejorar Plan'
+    }
+  };
+
+  // 2. SELECCIÓN DINÁMICA: "Si language es 'EN', usa translations.en"
+  const t = translations[language.toLowerCase() as 'en' | 'es'];
   
   const handleLogout = async () => {
     try {
@@ -77,7 +118,7 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
 
   return (
     <>
-      {/* 1. OVERLAY OSCURO (Fondo) */}
+      {/* 1. OVERLAY OSCURO */}
       <div 
         className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] lg:hidden transition-opacity duration-300 ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -88,15 +129,12 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
       {/* 2. CAJÓN DEL MENÚ */}
       <div className={`
         flex flex-col gap-4 lg:gap-6
-        /* Estilos Móvil: Drawer Fixed + Inset-y-0 para altura completa fija */
         fixed inset-y-0 left-0 z-[9999] w-72 bg-[#131119] p-4 border-r border-white/10 transition-transform duration-300 ease-in-out shadow-2xl
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        
-        /* Estilos Desktop: Reset a estático */
         lg:static lg:h-full lg:translate-x-0 lg:bg-transparent lg:p-0 lg:border-none lg:w-full lg:z-auto lg:transition-none lg:shadow-none
       `}>
         
-        {/* CABECERA MÓVIL (BOTÓN CERRAR) */}
+        {/* CABECERA MÓVIL */}
         <div className="flex items-center justify-end lg:hidden mb-0 px-1 shrink-0">
           <button 
             onClick={() => onClose && onClose()} 
@@ -109,12 +147,10 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
         </div>
 
         {/* CONTENIDO DEL MENÚ */}
-        {/* CAMBIO: Agregado 'flex flex-col' para que los hijos internos se distribuyan verticalmente */}
         <div className="bg-neutral-900/50 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-xl flex-1 overflow-y-auto no-scrollbar animate-fade-up flex flex-col">
           
-          {/* CAMBIO: Agregado 'flex-1' para empujar la sección de settings/logout hacia abajo */}
           <nav className="space-y-2 flex-1">
-            <p className="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Menu Principal</p>
+            <p className="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t.mainMenu}</p>
             
             <Link 
               href="/" 
@@ -122,7 +158,7 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
               onClick={handleLinkClick}
             >
               <LayoutDashboard size={20} className="transition-transform group-hover:scale-110" />
-              <span>Home</span>
+              <span>{t.home}</span>
             </Link>
             
             <Link 
@@ -131,7 +167,7 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
               onClick={handleLinkClick}
             >
               <Gamepad2 size={20} />
-              <span>All Games</span>
+              <span>{t.allGames}</span>
             </Link>
             
             <Link 
@@ -140,7 +176,7 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
               onClick={handleLinkClick}
             >
               <TrendingUp size={20} />
-              <span>Top-Selling</span>
+              <span>{t.topSelling}</span>
             </Link>
             
             <Link 
@@ -149,11 +185,11 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
               onClick={handleLinkClick}
             >
               <Trophy size={20} />
-              <span>Most Played</span>
+              <span>{t.mostPlayed}</span>
             </Link>
 
             <div className="my-4 h-px bg-white/5 mx-4"></div>
-            <p className="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tu Colección</p>
+            <p className="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.collection}</p>
 
             <Link 
               href="/favorites" 
@@ -161,7 +197,7 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
               onClick={handleLinkClick}
             >
               <Heart size={20} />
-              <span>Favoritos</span>
+              <span>{t.favorites}</span>
             </Link>
             
             <Link 
@@ -170,12 +206,11 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
               onClick={handleLinkClick}
             >
               <User size={20} />
-              <span>Perfil</span>
+              <span>{t.profile}</span>
             </Link>
           </nav>
 
-          {/* Sección Inferior (Settings + Logout) */}
-          {/* Ahora esto quedará pegado al fondo de la tarjeta gris */}
+          {/* Sección Inferior */}
           <div className="space-y-2 mt-4 pt-4 border-t border-white/5">
             <Link 
               href="/settings" 
@@ -183,7 +218,7 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
               onClick={handleLinkClick}
             >
               <Settings size={20} />
-              <span>Settings</span>
+              <span>{t.settings}</span>
             </Link>
             
             <button 
@@ -191,7 +226,7 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
               className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl font-medium transition-all group cursor-pointer"
             >
               <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
-              <span>LogOut</span>
+              <span>{t.logout}</span>
             </button>
           </div>
         </div>
@@ -200,12 +235,12 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
         <div className="hidden lg:flex mt-auto p-5 rounded-2xl bg-gradient-to-br from-pink-600 to-purple-700 text-white relative overflow-hidden shadow-2xl border border-white/10 flex-col shrink-0 animate-fade-up delay-200">
           <div className="relative z-10 flex flex-col justify-center gap-3">
             <div className="space-y-1">
-                <p className="font-bold text-lg leading-tight">GameLens Pro</p>
-                <p className="text-sm text-pink-100 opacity-90 font-medium leading-snug">Accede a métricas avanzadas y exporta reportes.</p>
+                <p className="font-bold text-lg leading-tight">{t.proTitle}</p>
+                <p className="text-sm text-pink-100 opacity-90 font-medium leading-snug">{t.proDesc}</p>
             </div>
             <div className="pt-2">
               <button className="w-full px-4 py-2 bg-white text-pink-600 rounded-lg text-sm font-bold shadow-lg hover:bg-gray-100 transition transform hover:scale-105 active:scale-95">
-                Mejorar Plan
+                {t.upgrade}
               </button>
             </div>
           </div>
