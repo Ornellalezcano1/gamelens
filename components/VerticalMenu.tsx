@@ -1,9 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useRouter, usePathname } from 'next/navigation'; // Agregamos usePathname
-// import { signOut } from 'firebase/auth'; // Descomenta en producción
-// import { auth } from '@/lib/firebase';   // Descomenta en producción
+import { useRouter, usePathname } from 'next/navigation';
 import { 
   X, 
   LayoutDashboard, 
@@ -22,8 +20,6 @@ const signOut = async () => console.log('Cerrando sesión...');
 // ---------------------------------------
 
 interface VerticalMenuProps {
-  // Ya no es estrictamente necesaria la prop activeItem porque lo calculamos con el pathname,
-  // pero la dejamos opcional por si quieres forzar un estado.
   activeItem?: string; 
   isOpen?: boolean;     
   onClose?: () => void; 
@@ -31,13 +27,12 @@ interface VerticalMenuProps {
 
 export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
   const router = useRouter(); 
-  const pathname = usePathname(); // Obtenemos la ruta actual para el estado activo
+  const pathname = usePathname(); 
   
   const handleLogout = async () => {
     try {
       await signOut();
       console.log("Sesión cerrada correctamente");
-      // Cerramos el menú también al salir
       if (onClose) onClose();
       router.push('/login');
     } catch (error) {
@@ -45,19 +40,14 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
     }
   };
 
-  // Helper para manejar el clic en enlaces (Navegar y Cerrar)
   const handleLinkClick = () => {
     if (onClose) onClose();
   };
 
-  // Función para determinar si un ítem está activo basado en la URL
   const getLinkClass = (path: string, itemKey: string) => {
-    // Es activo si el pathname coincide exactamente con el path
     const isActive = pathname === path;
-    
     const baseClass = "flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group";
     
-    // Mapa de colores para cada sección
     const colors: Record<string, string> = {
       'home': 'text-[#50a2ff] bg-[#50a2ff]/10 border-[#50a2ff]/20',
       'all-games': 'text-[#C471F2] bg-[#C471F2]/10 border-[#C471F2]/20',
@@ -119,10 +109,11 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
         </div>
 
         {/* CONTENIDO DEL MENÚ */}
-        {/* Se añade animate-fade-up para que aparezca suavemente */}
-        <div className="bg-neutral-900/50 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-xl flex-1 overflow-y-auto no-scrollbar animate-fade-up">
+        {/* CAMBIO: Agregado 'flex flex-col' para que los hijos internos se distribuyan verticalmente */}
+        <div className="bg-neutral-900/50 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-xl flex-1 overflow-y-auto no-scrollbar animate-fade-up flex flex-col">
           
-          <nav className="space-y-2">
+          {/* CAMBIO: Agregado 'flex-1' para empujar la sección de settings/logout hacia abajo */}
+          <nav className="space-y-2 flex-1">
             <p className="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Menu Principal</p>
             
             <Link 
@@ -183,7 +174,8 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
             </Link>
           </nav>
 
-          {/* Sección Inferior */}
+          {/* Sección Inferior (Settings + Logout) */}
+          {/* Ahora esto quedará pegado al fondo de la tarjeta gris */}
           <div className="space-y-2 mt-4 pt-4 border-t border-white/5">
             <Link 
               href="/settings" 
@@ -205,7 +197,6 @@ export const VerticalMenu = ({ isOpen, onClose }: VerticalMenuProps) => {
         </div>
 
         {/* BANNER PRO */}
-        {/* Se añade animate-fade-up con delay-200 para efecto de cascada */}
         <div className="hidden lg:flex mt-auto p-5 rounded-2xl bg-gradient-to-br from-pink-600 to-purple-700 text-white relative overflow-hidden shadow-2xl border border-white/10 flex-col shrink-0 animate-fade-up delay-200">
           <div className="relative z-10 flex flex-col justify-center gap-3">
             <div className="space-y-1">

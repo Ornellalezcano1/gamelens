@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { TrendingUp, Users, Star, Activity, Trophy, Clock } from 'lucide-react';
 import { 
     PieChart, Pie, Cell, ResponsiveContainer,
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip // Cambiado LineChart/Line por AreaChart/Area
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip 
 } from 'recharts';
 
 // ============================================================================
@@ -81,7 +81,7 @@ const ActivityTimelineChart: React.FC<ActivityTimelineChartProps> = ({ data }) =
 
     return (
         <div 
-            className="bg-neutral-900/80 p-5 rounded-2xl border border-white/5 shadow-2xl backdrop-blur-md h-64 flex flex-col w-full transition-colors duration-300"
+            className="bg-neutral-900/80 p-5 rounded-2xl border border-white/5 shadow-2xl backdrop-blur-md h-full flex flex-col w-full transition-colors duration-300"
             onMouseEnter={(e) => handleHover(e, true)}
             onMouseLeave={(e) => handleHover(e, false)}
         >
@@ -162,13 +162,12 @@ interface GameBasic {
     currentPlayers?: number;
 }
 
-// Nueva interfaz para definir la estructura compleja de rating
 interface GameRating {
     starsAverage: number;
     numeric: number;
     totalReviews: number;
     starsDistribution: Record<string, number>;
-    [key: string]: unknown; // Permite propiedades adicionales si las hay
+    [key: string]: unknown;
 }
 
 interface FeaturedGame extends GameBasic {
@@ -186,7 +185,6 @@ interface MetricsSidebarProps {
     defaultGame: FeaturedGame;
 }
 
-// Subcomponente local para los mini charts circulares
 const CircularMetric = ({ value, label, gradientId, colors, icon: Icon }: { value: number, label: string, gradientId: string, colors: string[], icon: React.ElementType }) => {
     const data = [
         { value: value, fill: `url(#${gradientId})` },
@@ -249,8 +247,7 @@ const CircularMetric = ({ value, label, gradientId, colors, icon: Icon }: { valu
 };
 
 export const MetricsSidebar: React.FC<MetricsSidebarProps> = ({ game, defaultGame }) => {
-    // Definición de colores principales
-    const PREVIEW_HOVER_COLOR = '#3b82f6';    // Azul Blue-500 extraído de la search bar
+    const PREVIEW_HOVER_COLOR = '#3b82f6';
 
     const applyHoverStyle = (e: React.MouseEvent<HTMLDivElement>, color: string, isEntering: boolean) => {
         const target = e.currentTarget;
@@ -282,23 +279,23 @@ export const MetricsSidebar: React.FC<MetricsSidebarProps> = ({ game, defaultGam
     }, [game, defaultGame]);
 
     return (
-        // CAMBIO: Usamos 'h-full' en lugar de 'h-[calc(100vh-8rem)]' para que la altura
-        // se adapte exactamente a la del contenedor padre (Grid del Dashboard), alineándose
-        // perfectamente con el menú lateral izquierdo.
-        <div className="sticky top-24 flex flex-col justify-between h-full animate-in fade-in slide-in-from-right-4 duration-500 pb-0">
+        // CONTENEDOR PRINCIPAL: h-full para ocupar todo el alto disponible
+        <div className="sticky top-24 flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500 pb-0 gap-4">
 
             {/* 1. TARJETA SUPERIOR (PREVIEW) */}
+            {/* CAMBIO: 'flex-1' añadido para que esta tarjeta CREZCA ocupando el espacio disponible */}
             <div
-                className="bg-neutral-900/80 backdrop-blur-md rounded-2xl border border-white/5 shadow-2xl relative overflow-hidden group mb-4 transition-colors duration-300"
+                className="bg-neutral-900/80 backdrop-blur-md rounded-2xl border border-white/5 shadow-2xl relative overflow-hidden group transition-colors duration-300 flex-1 flex flex-col"
                 onMouseEnter={(e) => applyHoverStyle(e, PREVIEW_HOVER_COLOR, true)}
                 onMouseLeave={(e) => applyHoverStyle(e, PREVIEW_HOVER_COLOR, false)}
             >
-                <div className="relative h-[16.9rem] w-full overflow-hidden">
+                {/* CAMBIO: 'flex-1' añadido aquí. La imagen ahora crecerá verticalmente */}
+                {/* Eliminamos h-[16.9rem] fijo y lo dejamos adaptarse */}
+                <div className="relative flex-1 w-full overflow-hidden min-h-[250px]">
                     <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${displayData.coverUrl})` }}>
                         <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/40 to-transparent" />
                     </div>
                     <div className="absolute bottom-0 left-0 w-full p-5 pb-2">
-                        {/* CAMBIO: Se aumentó el margin-bottom de mb-2 a mb-3 para dar más espacio */}
                         <div className="flex items-center justify-between mb-3">
                             <span className="px-3 py-1 bg-white/10 backdrop-blur-md text-white text-xs font-bold rounded-lg border border-white/10 uppercase tracking-wider shadow-lg font-sans group-hover:bg-white/20 transition-colors">Vista Previa</span>
                             <Activity size={16} className="text-white/80" />
@@ -307,9 +304,10 @@ export const MetricsSidebar: React.FC<MetricsSidebarProps> = ({ game, defaultGam
                     </div>
                 </div>
 
-                <div className="p-4 pt-3 space-y-3">
+                {/* CONTENIDO INFERIOR DE LA TARJETA (Métricas) */}
+                {/* shrink-0 asegura que esta parte no se aplaste */}
+                <div className="p-4 pt-3 space-y-3 shrink-0">
                     <div className="grid grid-cols-2 gap-2">
-                        {/* SCORE CARD: Amarillo #EFB537 */}
                         <div className="bg-black/40 rounded-xl p-2.5 border border-white/5 transition-all duration-300 hover:border-[#EFB537]/50 hover:bg-[#EFB537]/10">
                             <div className="flex items-center gap-1 text-gray-400 text-[10px] font-medium mb-0.5 uppercase tracking-wide">
                                 <Star size={10} className="text-[#EFB537] fill-[#EFB537]" /> Score
@@ -317,7 +315,6 @@ export const MetricsSidebar: React.FC<MetricsSidebarProps> = ({ game, defaultGam
                             <p className="text-lg font-bold text-white tabular-nums">{displayData.score}</p>
                         </div>
                         
-                        {/* ONLINE CARD: Verde #00FF62 */}
                         <div className="bg-black/40 rounded-xl p-2.5 border border-white/5 transition-all duration-300 hover:border-[#00FF62]/50 hover:bg-[#00FF62]/10">
                             <div className="flex items-center gap-1 text-gray-400 text-[10px] font-medium mb-0.5 uppercase tracking-wide">
                                 <Users size={10} className="text-[#00FF62]" /> Online
@@ -327,7 +324,6 @@ export const MetricsSidebar: React.FC<MetricsSidebarProps> = ({ game, defaultGam
                     </div>
                     
                     <div className="grid grid-cols-2 gap-2">
-                        {/* TRENDING CHART: Morado (#4530BE) -> Cyan (#2DD4E0) */}
                         <CircularMetric 
                             value={trendingScore} 
                             label="Trending" 
@@ -335,7 +331,6 @@ export const MetricsSidebar: React.FC<MetricsSidebarProps> = ({ game, defaultGam
                             colors={['#4530BE', '#2DD4E0']} 
                             icon={TrendingUp} 
                         />
-                        {/* CAMBIO: Peak Cap ahora usa #b340bf (Lila Correcto) -> Rosa (#f6339a) */}
                         <CircularMetric 
                             value={peakCapacity} 
                             label="Peak Cap." 
@@ -348,8 +343,9 @@ export const MetricsSidebar: React.FC<MetricsSidebarProps> = ({ game, defaultGam
             </div>
 
             {/* 2. GRÁFICO INFERIOR - COMPONENTE INTERNO */}
+            {/* CAMBIO: Altura fija (h-64) y shrink-0 para que NO cambie de tamaño */}
             <div
-                className="w-full h-auto rounded-2xl transition-colors duration-300 border border-transparent"
+                className="w-full h-64 shrink-0 rounded-2xl transition-colors duration-300 border border-transparent"
             >
                 <ActivityTimelineChart data={displayData.activity24hTimeline} />
             </div>
